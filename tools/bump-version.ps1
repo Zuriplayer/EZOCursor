@@ -1,81 +1,109 @@
 param(
-    [Parameter(Position = 0)]
-    [string]$Version,
+    [Parameter(Mandatory = $true)]
+    [string] $Version,
 
-    [switch]$Patch
+    [Parameter(Mandatory = $true)]
+    [int] $AddOnVersion,
+
+    [string] $ApiVersion
 )
 
 $ErrorActionPreference = "Stop"
-
-$repoRoot = Split-Path -Parent $PSScriptRoot
-$manifestPath = Join-Path $repoRoot "EZOCursor.txt"
-$corePath = Join-Path $repoRoot "modules\core.lua"
-
-if (-not (Test-Path $manifestPath)) {
-    throw "Manifest not found: $manifestPath"
-}
-
-if (-not (Test-Path $corePath)) {
-    throw "Core file not found: $corePath"
-}
-
+$root = (Resolve-Path (Join-Path $PSScriptRoot "..")).ProviderPath
 $utf8 = New-Object System.Text.UTF8Encoding($false)
-$manifestContent = [System.IO.File]::ReadAllText($manifestPath, $utf8)
-$coreContent = [System.IO.File]::ReadAllText($corePath, $utf8)
 
-$manifestMatch = [regex]::Match($manifestContent, '(?m)^## Version:\s*([0-9]+\.[0-9]+\.[0-9]+)\s*$')
-$coreMatch = [regex]::Match($coreContent, '(?m)^EZOCursor\.ADDON_VERSION\s*=\s*"([0-9]+\.[0-9]+\.[0-9]+)"\s*$')
+function Update-File {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Path,
 
-if (-not $manifestMatch.Success) {
-    throw "Could not read version from EZOCursor.txt"
-}
+        [Parameter(Mandatory = $true)]
+        [scriptblock] $Updater
+    )
 
-if (-not $coreMatch.Success) {
-    throw "Could not read version from modules/core.lua"
-}
-
-$currentManifestVersion = $manifestMatch.Groups[1].Value
-$currentCoreVersion = $coreMatch.Groups[1].Value
-
-if ($currentManifestVersion -ne $currentCoreVersion) {
-    throw "Version mismatch between manifest ($currentManifestVersion) and core.lua ($currentCoreVersion)"
-}
-
-if ([string]::IsNullOrWhiteSpace($Version)) {
-    if (-not $Patch) {
-        throw "Provide a version like 0.1.1 or use -Patch"
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return
     }
 
-    $parts = $currentManifestVersion.Split(".")
-    if ($parts.Count -ne 3) {
-        throw "Current version format is not supported: $currentManifestVersion"
+    $content = [System.IO.File]::ReadAllText($Path, $utf8)
+    $updated = & $Updater $content
+
+    if ($updated -ne $content) {
+        [System.IO.File]::WriteAllText($Path, $updated, $utf8)
+        Write-Host "updated $Path"
+    }
+}
+
+function Replace-WithGroupPrefix {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Content,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Pattern,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Value
+    )
+
+    return [regex]::Replace($Content, $Pattern, {
+        param($match)
+        return $match.Groups[1].Value + $Value
+    })
+}
+
+function Replace-WithTwoGroups {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Content,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Pattern,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Value
+    )
+
+    return [regex]::Replace($Content, $Pattern, {
+        param($match)
+        return $match.Groups[1].Value + $Value + $match.Groups[2].Value
+    })
+}
+
+$manifest = Get-ChildItem -LiteralPath $root -Filter "*.txt" -File | Select-Object -First 1
+if (-not $manifest) {
+    throw "No addon manifest (*.txt) found in $root"
+}
+
+Update-File $manifest.FullName {
+    param($content)
+    $content = Replace-WithGroupPrefix $content '(?m)^(## Version:\s*).+$' $Version
+    $content = Replace-WithGroupPrefix $content '(?m)^(## AddOnVersion:\s*)\d+\s*$' ([string]$AddOnVersion)
+    if ($ApiVersion) {
+        $content = Replace-WithGroupPrefix $content '(?m)^(## APIVersion:\s*).+$' $ApiVersion
+    }
+    return $content
+}
+
+Get-ChildItem -LiteralPath $root -Filter "*.lua" -File -Recurse |
+    Where-Object { $_.FullName -notmatch '\\.git\\' } |
+    ForEach-Object {
+        Update-File $_.FullName {
+            param($content)
+            $content = Replace-WithTwoGroups $content '(?m)^(\s*[\w_]+\.version\s*=\s*")[^"]*(")' $Version
+            $content = Replace-WithTwoGroups $content '(?m)^(\s*[\w_]+\.ADDON_VERSION\s*=\s*")[^"]*(")' $Version
+            $content = Replace-WithGroupPrefix $content '(?m)^(\s*[\w_]+\.addOnVersion\s*=\s*)\d+\s*$' ([string]$AddOnVersion)
+            return $content
+        }
     }
 
-    $major = [int]$parts[0]
-    $minor = [int]$parts[1]
-    $patchNumber = [int]$parts[2] + 1
-    $Version = "$major.$minor.$patchNumber"
+$handoff = Join-Path $root "docs\CODEX_HANDOFF.md"
+Update-File $handoff {
+    param($content)
+    $content = Replace-WithGroupPrefix $content '(?m)^(Version:\s*).+$' $Version
+    $content = Replace-WithGroupPrefix $content '(?m)^(AddOnVersion:\s*)\d+\s*$' ([string]$AddOnVersion)
+    return $content
 }
 
-if ($Version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
-    throw "Version must use semantic format major.minor.patch"
-}
-
-$updatedManifest = [regex]::Replace(
-    $manifestContent,
-    '(?m)^## Version:\s*[0-9]+\.[0-9]+\.[0-9]+\s*$',
-    "## Version: $Version",
-    1
-)
-
-$updatedCore = [regex]::Replace(
-    $coreContent,
-    '(?m)^EZOCursor\.ADDON_VERSION\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"\s*$',
-    "EZOCursor.ADDON_VERSION = `"$Version`"",
-    1
-)
-
-[System.IO.File]::WriteAllText($manifestPath, $updatedManifest, $utf8)
-[System.IO.File]::WriteAllText($corePath, $updatedCore, $utf8)
-
-Write-Host "Version updated: $currentManifestVersion -> $Version"
+Write-Host "Version updated to $Version / $AddOnVersion"
+Write-Host "Review with: git diff --check; git diff"
