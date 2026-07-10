@@ -14,6 +14,7 @@ EZOCursor is in public beta. The current scope is intentionally focused: it adds
 
 - The Elder Scrolls Online PC client.
 - LibAddonMenu-2.0.
+- Optional: LibChatMessage for cleaner addon chat output when available.
 - An ESO API version supported by `EZOCursor.txt`.
 
 Current manifest metadata:

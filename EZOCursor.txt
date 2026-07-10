@@ -5,6 +5,7 @@
 ## AddOnVersion: 10012
 ## APIVersion: 101049 101050
 ## DependsOn: LibAddonMenu-2.0
+## OptionalDependsOn: LibChatMessage
 ## SavedVariables: EZOCursor_Saved
 
 lang/en.lua

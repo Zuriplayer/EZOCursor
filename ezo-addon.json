@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "addon": {
+    "id": "ezocursor",
+    "name": "EZOCursor",
+    "version": "0.1.12",
+    "status": "beta",
+    "phase": "public-beta",
+    "visibility": "public",
+    "manifest": "EZOCursor.txt",
+    "package": {
+      "rootFolderName": "EZOCursor",
+      "zipName": "EZOCursor_v0.1.12.zip",
+      "outputPath": "dist",
+      "include": [
+        "*.txt",
+        "*.lua",
+        "*.xml",
+        "modules/**",
+        "lang/**",
+        "libs/**",
+        "media/**",
+        "textures/**",
+        "fonts/**",
+        "bindings/**"
+      ],
+      "exclude": [
+        ".codex/**",
+        ".github/**",
+        ".git/**",
+        ".vscode/**",
+        "dev/**",
+        "docs/**",
+        "scripts/**",
+        "tests/**",
+        "test/**",
+        "node_modules/**",
+        "build/**",
+        "dist/**",
+        "*.md",
+        "*.ps1",
+        "*.sh",
+        "*.log",
+        "*.tmp",
+        "*.bak"
+      ]
+    }
+  }
+}
