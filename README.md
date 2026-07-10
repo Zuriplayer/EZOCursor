@@ -2,8 +2,7 @@
 
 Beta addon for The Elder Scrolls Online that adds cursor-centered HUD aids from the EZO addon family.
 
-Prefer Spanish? Read the [Spanish README](README.es.md).
-
+¿Prefieres español? Lee el [README en español](README.es.md).
 Support, bug reports, and suggestions: https://discord.gg/ekw8zUAcRm
 
 ## Beta Status
