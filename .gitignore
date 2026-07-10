@@ -7,6 +7,7 @@ Thumbs.db
 
 # Local assistant/agent configuration
 AGENTS.md
+AGENTS.local.md
 .codex/
 .agents/
 .cursor/
@@ -24,6 +25,9 @@ private/
 scratch/
 tmp/
 temp/
+build/
+dist/
+out/
 
 # Backups and temporary editor files
 *.bak
@@ -37,3 +41,8 @@ temp/
 .#*
 *.swp
 *.swo
+
+# Private notes
+notes.local.md
+private-notes.md
+*.notes.local.md
