@@ -4,3 +4,36 @@ SavedVariables/
 .idea/
 Thumbs.db
 .DS_Store
+
+# Local assistant/agent configuration
+AGENTS.md
+.codex/
+.agents/
+.cursor/
+.claude/
+.github-copilot/
+
+# Local environment and private data
+.env
+.env.*
+*.secret*
+secrets.*
+*.local*
+local/
+private/
+scratch/
+tmp/
+temp/
+
+# Backups and temporary editor files
+*.bak
+*.backup
+*.orig
+*.rej
+*.tmp
+*.temp
+*~
+~$*
+.#*
+*.swp
+*.swo

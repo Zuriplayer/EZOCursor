@@ -4,17 +4,6 @@
 EZOCursor = EZOCursor or {}
 local EZO_CURSOR = EZOCursor
 
-local function RegisterWithEZOBindings()
-    if not (EZOBindings and type(EZOBindings.RegisterAddon) == "function") then
-        return
-    end
-
-    EZOBindings:RegisterAddon(EZO_CURSOR.ADDON_NAME or "EZOCursor", {
-        version = 1,
-        actions = {},
-    })
-end
-
 local function OnAddonLoaded(eventCode, addonName)
     if addonName ~= EZO_CURSOR.ADDON_NAME then
         return
@@ -27,7 +16,6 @@ local function OnAddonLoaded(eventCode, addonName)
     end
 
     EZO_CURSOR:Initialize()
-    RegisterWithEZOBindings()
 end
 
 EVENT_MANAGER:RegisterForEvent(EZOCursor.EVENT_NAMESPACE or "EZOCursor_Core", EVENT_ADD_ON_LOADED, OnAddonLoaded)

@@ -1,10 +1,10 @@
 ## Title: E|cB040FFZ|rOCursor
 ## Author: @Zuriplayer
-## Description: Utilidades para cursor de la familia de programas EZO.
-## Version: 0.1.0
-## AddOnVersion: 10000
-## APIVersion: 101049
-## OptionalDependsOn: EZOBindings
+## Description: Cursor utilities from the EZO addon family.
+## Version: 0.1.12
+## AddOnVersion: 10012
+## APIVersion: 101049 101050
+## DependsOn: LibAddonMenu-2.0
 ## SavedVariables: EZOCursor_Saved
 
 lang/en.lua
@@ -12,5 +12,6 @@ lang/es.lua
 modules/i18n.lua
 modules/core.lua
 modules/persistence.lua
+modules/lam_registry.lua
 modules/reticle_visual.lua
 EZOCursor.lua

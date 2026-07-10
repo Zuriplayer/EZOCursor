@@ -2,17 +2,18 @@
 
 ## bump-version.ps1
 
-Updates the addon version in:
+Wrapper local para la herramienta compartida `..\..\EZOFamilyTools\bump-version.ps1`.
 
-- `EZOCursor.txt`
-- `modules/core.lua`
-
-Examples:
+Uso habitual:
 
 ```powershell
-.\tools\bump-version.ps1 0.1.1
+.\tools\bump-version.ps1 -Patch -ApiVersion "101049 101050"
 ```
 
+Comprobación:
+
 ```powershell
-.\tools\bump-version.ps1 -Patch
+.\tools\bump-version.ps1 -Check -ApiVersion "101049 101050"
 ```
+
+`## APIVersion` controla si ESO marca el addon como desactualizado en la pantalla de complementos/addons. No usar más de dos valores.

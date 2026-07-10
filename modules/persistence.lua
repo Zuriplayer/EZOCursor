@@ -12,15 +12,49 @@ local function BuildDefaults()
         reticle = {
             enabled = true,
             blockIndicatorEnabled = true,
+            guidesEnabled = true,
+            guidesMode = "always",
+            debugEnabled = false,
+            guideColors = {
+                noAttackable = { r = 0.85, g = 0.85, b = 0.85, a = 0.8 },
+                attackable = { r = 0.2, g = 1, b = 0.35, a = 0.95 },
+                cameraPreferred = { r = 0.55, g = 0.65, b = 1, a = 1 },
+                combat = { r = 1, g = 0.12, b = 0.08, a = 1 },
+                combatDamage = { r = 1, g = 0.55, b = 0.2, a = 1 },
+            },
             useCircularReticle = true,
             idleAlpha = 0.85,
         },
     }
 end
 
+local function MoveGuideColor(colors, fromKey, toKey)
+    if type(colors[fromKey]) == "table" then
+        colors[toKey] = colors[fromKey]
+    end
+    colors[fromKey] = nil
+end
+
+local function MigrateSavedVariables()
+    local colors = EZO_CURSOR.sv
+        and EZO_CURSOR.sv.reticle
+        and EZO_CURSOR.sv.reticle.guideColors
+        or nil
+
+    if type(colors) ~= "table" then
+        return
+    end
+
+    MoveGuideColor(colors, "neutral", "noAttackable")
+    MoveGuideColor(colors, "attackableFocused", "cameraPreferred")
+    MoveGuideColor(colors, "attacked", "combat")
+    MoveGuideColor(colors, "attackedFocused", "combatDamage")
+end
+
 local function EnsureSavedVariables()
     local worldName = GetWorldName()
     EZO_CURSOR.sv = ZO_SavedVars:NewAccountWide("EZOCursor_Saved", 1, worldName, BuildDefaults())
+    MigrateSavedVariables()
 end
 
 local function SafeChat(message)
@@ -51,5 +85,9 @@ function EZO_CURSOR.Initialize()
 
     if EZO_CURSOR.ReticleVisual and EZO_CURSOR.ReticleVisual.Initialize then
         EZO_CURSOR.ReticleVisual.Initialize()
+    end
+
+    if EZO_CURSOR.LAM and EZO_CURSOR.LAM.Initialize then
+        EZO_CURSOR.LAM.Initialize()
     end
 end
