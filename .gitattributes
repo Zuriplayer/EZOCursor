@@ -11,7 +11,7 @@
 *.svg text eol=lf
 LICENSE text eol=lf
 
-*.ps1 text eol=lf
+*.ps1 text eol=lf linguist-vendored
 
 *.dds binary
 *.png binary
