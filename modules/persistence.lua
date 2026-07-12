@@ -3,6 +3,7 @@
 EZOCursor = EZOCursor or {}
 
 local EZO_CURSOR = EZOCursor
+local LOGGER_TAG = "EZOCursor"
 
 local function BuildDefaults()
     return {
@@ -66,6 +67,37 @@ local function SafeChat(message)
     d(tostring(message))
 end
 
+local function LogInfo(message)
+    local lib = _G.LibDebugLogger
+    if type(lib) ~= "function" and type(lib) ~= "table" then
+        return false
+    end
+
+    if not EZO_CURSOR._debugLogger and type(lib) == "function" then
+        local ok, logger = pcall(lib, LOGGER_TAG)
+        if ok then
+            EZO_CURSOR._debugLogger = logger
+        end
+    end
+    if not EZO_CURSOR._debugLogger and type(lib) == "table" and type(lib.Create) == "function" then
+        local ok, logger = pcall(function()
+            return lib:Create(LOGGER_TAG)
+        end)
+        if ok then
+            EZO_CURSOR._debugLogger = logger
+        end
+    end
+
+    local logger = EZO_CURSOR._debugLogger
+    if logger and type(logger.Info) == "function" then
+        return pcall(function()
+            logger:Info(tostring(message or ""))
+        end)
+    end
+
+    return false
+end
+
 function EZO_CURSOR.Initialize()
     EnsureSavedVariables()
 
@@ -81,6 +113,9 @@ function EZO_CURSOR.Initialize()
     end
 
     EZO_CURSOR.Print = SafeChat
+    EZO_CURSOR.LogInfo = LogInfo
+    EZO_CURSOR.DebugLog = LogInfo
+    LogInfo(GetString(SI_EZOCURSOR_MSG_INIT))
     EZO_CURSOR.Print(GetString(SI_EZOCURSOR_MSG_INIT))
 
     if EZO_CURSOR.ReticleVisual and EZO_CURSOR.ReticleVisual.Initialize then
