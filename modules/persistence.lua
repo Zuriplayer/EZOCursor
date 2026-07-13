@@ -68,8 +68,13 @@ local function SafeChat(message)
 end
 
 local function LogInfo(message)
+    if EZO_CURSOR._debugLoggerUnavailable == true then
+        return false
+    end
+
     local lib = _G.LibDebugLogger
     if type(lib) ~= "function" and type(lib) ~= "table" then
+        EZO_CURSOR._debugLoggerUnavailable = true
         return false
     end
 
@@ -90,11 +95,13 @@ local function LogInfo(message)
 
     local logger = EZO_CURSOR._debugLogger
     if logger and type(logger.Info) == "function" then
+        EZO_CURSOR._debugLoggerUnavailable = false
         return pcall(function()
             logger:Info(tostring(message or ""))
         end)
     end
 
+    EZO_CURSOR._debugLoggerUnavailable = true
     return false
 end
 
