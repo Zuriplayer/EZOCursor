@@ -5,6 +5,7 @@ EZOCursor = EZOCursor or {}
 local EZO_CURSOR = EZOCursor
 local LOGGER_TAG = "EZOCursor"
 local languageCallbackRegistered = false
+local ezocoreRegistered = false
 
 local function BuildDefaults()
     return {
@@ -127,6 +128,32 @@ local function RegisterEZOCoreLanguageCallback()
     return languageCallbackRegistered
 end
 
+local function RegisterWithEZOCore()
+    if ezocoreRegistered
+        or not (EZOCore and type(EZOCore.RegisterAddon) == "function") then
+        return false
+    end
+
+    local ok, result = pcall(function()
+        return EZOCore:RegisterAddon({
+            id = "ezocursor",
+            name = EZO_CURSOR.ADDON_NAME or "EZOCursor",
+            version = EZO_CURSOR.ADDON_VERSION or "0.0.0",
+            addOnVersion = 10013,
+            apiVersion = 1,
+            capabilities = {
+                "cursor.blockState",
+                "cursor.reticle",
+                "family.language.consumer",
+                "family.settings.consumer",
+            },
+        })
+    end)
+
+    ezocoreRegistered = ok and result == true
+    return ezocoreRegistered
+end
+
 function EZO_CURSOR.Initialize()
     EnsureSavedVariables()
 
@@ -141,6 +168,7 @@ function EZO_CURSOR.Initialize()
         EZO_CURSOR.sv.general.language = EZO_CURSOR.I18N and EZO_CURSOR.I18N.GetDefaultLanguage() or appliedLanguage
     end
     RegisterEZOCoreLanguageCallback()
+    RegisterWithEZOCore()
 
     EZO_CURSOR.Print = SafeChat
     EZO_CURSOR.LogInfo = LogInfo
