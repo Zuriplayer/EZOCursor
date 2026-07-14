@@ -1,11 +1,11 @@
 ## Title: E|cB040FFZ|rOCursor
 ## Author: @Zuriplayer
 ## Description: Cursor utilities from the EZO addon family.
-## Version: 0.1.12
-## AddOnVersion: 10012
+## Version: 0.1.13
+## AddOnVersion: 10013
 ## APIVersion: 101049 101050
 ## DependsOn: LibAddonMenu-2.0
-## OptionalDependsOn: LibChatMessage LibDebugLogger DebugLogViewer
+## OptionalDependsOn: LibChatMessage LibDebugLogger DebugLogViewer EZOCore
 ## SavedVariables: EZOCursor_Saved
 
 lang/en.lua

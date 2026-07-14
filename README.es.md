@@ -18,8 +18,8 @@ EZOCursor está en beta pública. El alcance actual es intencionadamente concret
 
 Metadata actual del manifiesto:
 
-- Versión del addon: `0.1.12`
-- AddOnVersion: `10012`
+- Versión del addon: `0.1.13`
+- AddOnVersion: `10013`
 - APIVersion: `101049 101050`
 
 ## Instalación
@@ -55,6 +55,9 @@ EZOCursor usa LibAddonMenu-2.0 para sus opciones visibles.
 
 Opciones visibles actuales:
 
+- Cabeceras informativas moradas con un icono de información de 26 px.
+- La ayuda general de cada sección está en el tooltip de su cabecera.
+- La ayuda específica de cada campo está en el tooltip del propio control.
 - Activar o desactivar las líneas guía de pantalla.
 - Elegir cuándo se muestran las líneas guía:
   - siempre
@@ -88,6 +91,8 @@ Durante la beta, prueba estos escenarios:
 - Activar y desactivar las líneas guía de pantalla.
 - Cambiar el modo de líneas guía entre `Siempre` y `En combate`.
 - Cambiar cada color de línea guía y confirmar que el estado visual se actualiza.
+- Confirmar que cada sección de ajustes muestra el icono informativo morado y abre su tooltip general al pasar el cursor.
+- Confirmar que los tooltips específicos de cada campo se abren desde sus controles.
 - Apuntar a ningún objetivo, objetivos no atacables y objetivos atacables.
 - Entrar y salir de combate.
 - Hacer o recibir daño y confirmar el comportamiento del color de daño reciente.

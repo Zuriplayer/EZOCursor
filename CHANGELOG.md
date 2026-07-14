@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.13
+
+- Updated the LibAddonMenu settings panel to use EZO-family informational section headers with purple help icons.
+- Moved section-wide help into header tooltips while preserving field-specific tooltips.
+- Updated English and Spanish public documentation for the settings help pattern.
+
 ## 0.1.12 - Public Beta
 
 - Added LibAddonMenu-based settings for guide-line visibility, debug display, and guide-line state colors.

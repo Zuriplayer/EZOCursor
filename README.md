@@ -18,8 +18,8 @@ EZOCursor is in public beta. The current scope is intentionally focused: it adds
 
 Current manifest metadata:
 
-- Addon version: `0.1.12`
-- AddOnVersion: `10012`
+- Addon version: `0.1.13`
+- AddOnVersion: `10013`
 - APIVersion: `101049 101050`
 
 ## Installation
@@ -55,6 +55,9 @@ EZOCursor uses LibAddonMenu-2.0 for its visible settings.
 
 Current visible options:
 
+- Purple informational section headers with a 26 px info icon.
+- General section help is attached to each section header tooltip.
+- Field-specific help is attached to the tooltip of each control.
 - Enable or disable screen guide lines.
 - Choose when guide lines are shown:
   - always
@@ -88,6 +91,8 @@ Please test these scenarios during beta:
 - Enable and disable screen guide lines.
 - Switch guide-line mode between `Always` and `In combat`.
 - Change each guide-line color and confirm the visual state updates.
+- Confirm each settings section shows the purple info icon and opens its general tooltip on hover.
+- Confirm field-specific tooltips open from their controls.
 - Aim at no target, non-attackable targets, and attackable targets.
 - Enter and leave combat.
 - Deal or receive damage and confirm recent-combat color behavior.

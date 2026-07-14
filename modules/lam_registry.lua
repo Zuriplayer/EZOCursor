@@ -8,6 +8,7 @@ local LAM = EZO_CURSOR.LAM
 
 local GUIDES_ALWAYS = "always"
 local GUIDES_COMBAT = "combat"
+local INFO_HEADER_TEXTURE = "EsoUI/Art/Miscellaneous/help_icon.dds"
 
 local GUIDE_COLOR_DEFAULTS = {
     noAttackable = { r = 0.85, g = 0.85, b = 0.85, a = 0.8 },
@@ -35,6 +36,18 @@ local function RefreshReticleVisuals()
     if EZO_CURSOR.ReticleVisual and EZO_CURSOR.ReticleVisual.RefreshGuideLayout then
         EZO_CURSOR.ReticleVisual.RefreshGuideLayout()
     end
+end
+
+function LAM.CreateInfoHeader(name, tooltip)
+    return {
+        type = "header",
+        name = zo_strformat(
+            "<<1>> |cB040FF|t26:26:<<2>>:inheritcolor|t|r",
+            tostring(name or ""),
+            INFO_HEADER_TEXTURE
+        ),
+        tooltip = tooltip,
+    }
 end
 
 local function GetGuideColor(colorKey)
@@ -83,7 +96,10 @@ end
 
 local function BuildOptions()
     return {
-        { type = "header", name = GetString(SI_EZOCURSOR_OPTION_RETICLE_HEADER) },
+        LAM.CreateInfoHeader(
+            GetString(SI_EZOCURSOR_OPTION_RETICLE_HEADER),
+            GetString(SI_EZOCURSOR_OPTION_RETICLE_HEADER_TOOLTIP)
+        ),
         {
             type = "checkbox",
             name = GetString(SI_EZOCURSOR_OPTION_GUIDES_ENABLE),
@@ -127,7 +143,10 @@ local function BuildOptions()
             end,
             width = "full",
         },
-        { type = "header", name = GetString(SI_EZOCURSOR_OPTION_DEBUG_HEADER) },
+        LAM.CreateInfoHeader(
+            GetString(SI_EZOCURSOR_OPTION_DEBUG_HEADER),
+            GetString(SI_EZOCURSOR_OPTION_DEBUG_HEADER_TOOLTIP)
+        ),
         {
             type = "checkbox",
             name = GetString(SI_EZOCURSOR_OPTION_DEBUG_ENABLE),
@@ -142,7 +161,10 @@ local function BuildOptions()
             default = false,
             width = "full",
         },
-        { type = "header", name = GetString(SI_EZOCURSOR_OPTION_GUIDE_COLORS_HEADER) },
+        LAM.CreateInfoHeader(
+            GetString(SI_EZOCURSOR_OPTION_GUIDE_COLORS_HEADER),
+            GetString(SI_EZOCURSOR_OPTION_GUIDE_COLORS_HEADER_TOOLTIP)
+        ),
         BuildGuideColorOption("noAttackable", SI_EZOCURSOR_OPTION_GUIDE_COLOR_NO_ATTACKABLE),
         BuildGuideColorOption("attackable", SI_EZOCURSOR_OPTION_GUIDE_COLOR_ATTACKABLE),
         BuildGuideColorOption("cameraPreferred", SI_EZOCURSOR_OPTION_GUIDE_COLOR_CAMERA_PREFERRED),
