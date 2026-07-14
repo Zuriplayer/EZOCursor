@@ -5,6 +5,7 @@ EZOCursor = EZOCursor or {}
 EZOCursor.I18N = EZOCursor.I18N or {}
 
 local I18N = EZOCursor.I18N
+local LANGUAGE_INHERIT = "inherit"
 
 local function GetClientDefaultLanguage()
     if type(GetCVar) == "function" then
@@ -32,7 +33,34 @@ local function RegisterString(stringIdName, value)
     SafeAddString(stringId, tostring(value), 1)
 end
 
+function I18N.GetDefaultLanguage()
+    return LANGUAGE_INHERIT
+end
+
+function I18N.IsLanguageManagedByEZOCore()
+    if not (EZOCore and type(EZOCore.IsLanguageGloballyManaged) == "function") then
+        return false
+    end
+    local ok, managed = pcall(function()
+        return EZOCore:IsLanguageGloballyManaged()
+    end)
+    return ok and managed == true
+end
+
 function I18N.GetSupportedLanguage(language)
+    if I18N.IsLanguageManagedByEZOCore() then
+        local ok, inherited = pcall(function()
+            return EZOCore:GetLanguage()
+        end)
+        if ok and (inherited == "es" or inherited == "en") then
+            return inherited
+        end
+    end
+
+    if language == LANGUAGE_INHERIT then
+        return GetClientDefaultLanguage()
+    end
+
     if language == "es" or language == "en" then
         return language
     end
@@ -41,7 +69,7 @@ function I18N.GetSupportedLanguage(language)
 end
 
 function I18N.Apply(language)
-    local supportedLanguage = I18N.GetSupportedLanguage(language)
+    local supportedLanguage = I18N.GetSupportedLanguage(language or I18N.GetDefaultLanguage())
     local source = supportedLanguage == "es" and EZO_CURSOR_STRINGS_ES or EZO_CURSOR_STRINGS_EN
 
     if type(source) ~= "table" then

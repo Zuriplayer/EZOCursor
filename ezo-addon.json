@@ -4,6 +4,7 @@
     "id": "ezocursor",
     "name": "EZOCursor",
     "version": "0.1.12",
+    "stage": "beta",
     "status": "beta",
     "phase": "public-beta",
     "visibility": "public",

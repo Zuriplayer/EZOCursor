@@ -4,11 +4,12 @@ EZOCursor = EZOCursor or {}
 
 local EZO_CURSOR = EZOCursor
 local LOGGER_TAG = "EZOCursor"
+local languageCallbackRegistered = false
 
 local function BuildDefaults()
     return {
         general = {
-            language = EZO_CURSOR.I18N and EZO_CURSOR.I18N.GetSupportedLanguage() or "en",
+            language = EZO_CURSOR.I18N and EZO_CURSOR.I18N.GetDefaultLanguage() or "inherit",
         },
         reticle = {
             enabled = true,
@@ -105,6 +106,27 @@ local function LogInfo(message)
     return false
 end
 
+local function RegisterEZOCoreLanguageCallback()
+    if languageCallbackRegistered
+        or not (EZOCore and type(EZOCore.RegisterCallback) == "function") then
+        return false
+    end
+
+    local eventName = EZOCore.EVENT_LANGUAGE_CHANGED or "EZO_CORE_LANGUAGE_CHANGED"
+    local ok, result = pcall(function()
+        return EZOCore:RegisterCallback(eventName, function()
+            if EZO_CURSOR.sv
+                and EZO_CURSOR.sv.general
+                and EZO_CURSOR.I18N
+                and EZO_CURSOR.I18N.Apply then
+                EZO_CURSOR.I18N.Apply(EZO_CURSOR.sv.general.language or "inherit")
+            end
+        end)
+    end)
+    languageCallbackRegistered = ok and result == true
+    return languageCallbackRegistered
+end
+
 function EZO_CURSOR.Initialize()
     EnsureSavedVariables()
 
@@ -115,9 +137,10 @@ function EZO_CURSOR.Initialize()
 
     local appliedLanguage = EZO_CURSOR.I18N and EZO_CURSOR.I18N.Apply(selectedLanguage) or "en"
 
-    if EZO_CURSOR.sv and EZO_CURSOR.sv.general then
-        EZO_CURSOR.sv.general.language = appliedLanguage
+    if EZO_CURSOR.sv and EZO_CURSOR.sv.general and not EZO_CURSOR.sv.general.language then
+        EZO_CURSOR.sv.general.language = EZO_CURSOR.I18N and EZO_CURSOR.I18N.GetDefaultLanguage() or appliedLanguage
     end
+    RegisterEZOCoreLanguageCallback()
 
     EZO_CURSOR.Print = SafeChat
     EZO_CURSOR.LogInfo = LogInfo
