@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.14
+
+- Integrated the existing settings panel into `Settings > EZO` when EZOCore is available.
+- Preserved the standalone LibAddonMenu panel as a compatibility fallback.
+- Declared the runtime lifecycle stage as beta and added the permanent Discord feedback link to the panel header.
+- Resynchronized `ezo-addon.json` and its package filename with the visible addon version.
+
 ## 0.1.13
 
 - Updated the LibAddonMenu settings panel to use EZO-family informational section headers with purple help icons.

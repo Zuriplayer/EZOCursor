@@ -9,6 +9,8 @@ local LAM = EZO_CURSOR.LAM
 local GUIDES_ALWAYS = "always"
 local GUIDES_COMBAT = "combat"
 local INFO_HEADER_TEXTURE = "EsoUI/Art/Miscellaneous/help_icon.dds"
+local PANEL_ID = "EZOCursor_Panel"
+local FEEDBACK_URL = "https://discord.gg/ekw8zUAcRm"
 
 local GUIDE_COLOR_DEFAULTS = {
     noAttackable = { r = 0.85, g = 0.85, b = 0.85, a = 0.8 },
@@ -191,13 +193,24 @@ function LAM.Initialize()
         displayName = GetString(SI_EZOCURSOR_TITLE),
         author = EZO_CURSOR.AUTHOR,
         version = EZO_CURSOR.ADDON_VERSION,
+        ezoStage = "beta",
+        feedback = FEEDBACK_URL,
         registerForRefresh = true,
         registerForDefaults = true,
     }
 
-    local panel = lib:RegisterAddonPanel("EZOCursor_Panel", panelData)
+    local options = BuildOptions()
+    if EZOCore and type(EZOCore.RegisterSettingsPanel) == "function" then
+        local registered = EZOCore:RegisterSettingsPanel(EZO_CURSOR.ADDON_NAME, PANEL_ID, panelData, options)
+        if registered then
+            EZO_CURSOR.ezoSettingsRegistered = true
+            return
+        end
+    end
+
+    local panel = lib:RegisterAddonPanel(PANEL_ID, panelData)
     EZO_CURSOR._lamPanel = panel
     _G.EZOCursor_Panel = panel
 
-    lib:RegisterOptionControls("EZOCursor_Panel", BuildOptions())
+    lib:RegisterOptionControls(PANEL_ID, options)
 end

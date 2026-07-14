@@ -14,12 +14,13 @@ EZOCursor está en beta pública. El alcance actual es intencionadamente concret
 - Cliente de The Elder Scrolls Online para PC.
 - LibAddonMenu-2.0.
 - Opcional: LibChatMessage para una salida de chat más limpia cuando esté disponible.
+- Opcional: EZOCore para el panel central `Settings > EZO` y el modo de idioma compartido.
 - Una versión de API de ESO compatible con `EZOCursor.txt`.
 
 Metadata actual del manifiesto:
 
-- Versión del addon: `0.1.13`
-- AddOnVersion: `10013`
+- Versión del addon: `0.1.14`
+- AddOnVersion: `10014`
 - APIVersion: `101049 101050`
 
 ## Instalación
@@ -51,7 +52,9 @@ Metadata actual del manifiesto:
 
 ## Panel de Configuración
 
-EZOCursor usa LibAddonMenu-2.0 para sus opciones visibles.
+EZOCursor aloja sus opciones visibles en `Settings > EZO` cuando EZOCore está
+disponible. Sin EZOCore, los mismos controles siguen accesibles mediante la
+lista estándar de ajustes de addons de LibAddonMenu.
 
 Opciones visibles actuales:
 
@@ -87,7 +90,8 @@ Existen algunos ajustes internos o por defecto en SavedVariables, como `enabled`
 Durante la beta, prueba estos escenarios:
 
 - Entrar al juego y ejecutar `/reloadui` sin errores Lua.
-- Abrir el panel de configuración de EZOCursor en LibAddonMenu.
+- Abrir EZOCursor desde `Settings > EZO`, o desde el fallback de LibAddonMenu
+  cuando EZOCore esté desactivado.
 - Activar y desactivar las líneas guía de pantalla.
 - Cambiar el modo de líneas guía entre `Siempre` y `En combate`.
 - Cambiar cada color de línea guía y confirmar que el estado visual se actualiza.
