@@ -157,8 +157,12 @@ local function BuildOptions()
                 return GetReticleSettings().debugEnabled == true
             end,
             setFunc = function(value)
-                GetReticleSettings().debugEnabled = value == true
-                RefreshReticleVisuals()
+                if EZO_CURSOR.SetDebugModeEnabled then
+                    EZO_CURSOR.SetDebugModeEnabled(value == true)
+                else
+                    GetReticleSettings().debugEnabled = value == true
+                    RefreshReticleVisuals()
+                end
             end,
             default = false,
             width = "full",

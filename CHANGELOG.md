@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.15
+
+- Registers the reticle debug display with EZOCore for family-wide disable control.
+- Reuses the addon's normal refresh path so disabling debug hides its panel and releases debug-only updates when applicable.
+
 ## 0.1.14
 
 - Integrated the existing settings panel into `Settings > EZO` when EZOCore is available.

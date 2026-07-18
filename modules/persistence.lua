@@ -6,6 +6,7 @@ local EZO_CURSOR = EZOCursor
 local LOGGER_TAG = "EZOCursor"
 local languageCallbackRegistered = false
 local ezocoreRegistered = false
+local debugControllerRegistered = false
 
 local function BuildDefaults()
     return {
@@ -139,11 +140,12 @@ local function RegisterWithEZOCore()
             id = "ezocursor",
             name = EZO_CURSOR.ADDON_NAME or "EZOCursor",
             version = EZO_CURSOR.ADDON_VERSION or "0.0.0",
-            addOnVersion = 10013,
+            addOnVersion = 10015,
             apiVersion = 1,
             capabilities = {
                 "cursor.blockState",
                 "cursor.reticle",
+                "family.debug.controller",
                 "family.language.consumer",
                 "family.settings.consumer",
             },
@@ -152,6 +154,51 @@ local function RegisterWithEZOCore()
 
     ezocoreRegistered = ok and result == true
     return ezocoreRegistered
+end
+
+function EZO_CURSOR.SetDebugModeEnabled(enabled)
+    local settings = EZO_CURSOR.sv and EZO_CURSOR.sv.reticle
+    if not settings then
+        return false
+    end
+
+    settings.debugEnabled = enabled == true
+    if EZO_CURSOR.ReticleVisual and EZO_CURSOR.ReticleVisual.Start then
+        EZO_CURSOR.ReticleVisual.Start()
+    end
+    return settings.debugEnabled == (enabled == true)
+end
+
+local function RegisterDebugWithEZOCore()
+    if debugControllerRegistered
+        or not (EZOCore and type(EZOCore.GetService) == "function") then
+        return false
+    end
+
+    local service = EZOCore:GetService("family.debug", 1)
+    if not service or type(service.RegisterController) ~= "function" then
+        return false
+    end
+
+    local ok, result = pcall(function()
+        return service:RegisterController({
+            id = "ezocursor.debug",
+            addonId = "ezocursor",
+            addonName = "EZOCursor",
+            name = function() return GetString(SI_EZOCURSOR_OPTION_DEBUG_ENABLE) end,
+            isEnabled = function()
+                return EZO_CURSOR.sv
+                    and EZO_CURSOR.sv.reticle
+                    and EZO_CURSOR.sv.reticle.debugEnabled == true
+            end,
+            setEnabled = function(enabled)
+                return EZO_CURSOR.SetDebugModeEnabled(enabled == true)
+            end,
+        })
+    end)
+
+    debugControllerRegistered = ok and result == true
+    return debugControllerRegistered
 end
 
 function EZO_CURSOR.Initialize()
@@ -169,6 +216,7 @@ function EZO_CURSOR.Initialize()
     end
     RegisterEZOCoreLanguageCallback()
     RegisterWithEZOCore()
+    RegisterDebugWithEZOCore()
 
     EZO_CURSOR.Print = SafeChat
     EZO_CURSOR.LogInfo = LogInfo
