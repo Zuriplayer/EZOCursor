@@ -7,6 +7,9 @@ local LOGGER_TAG = "EZOCursor"
 local languageCallbackRegistered = false
 local ezocoreRegistered = false
 local debugControllerRegistered = false
+local SAVED_VARIABLES_NAME = "EZOCursor_Saved"
+local SAVED_VARIABLES_VERSION = 1
+local MIGRATION_MARKER = "__ezoPreferenceScopeMigrated"
 
 local function BuildDefaults()
     return {
@@ -30,6 +33,56 @@ local function BuildDefaults()
             idleAlpha = 0.85,
         },
     }
+end
+
+local function DeepCopy(src)
+    if type(src) ~= "table" then
+        return src
+    end
+
+    local out = {}
+    for key, value in pairs(src) do
+        out[key] = DeepCopy(value)
+    end
+    return out
+end
+
+local function ApplyDefaults(target, defaults)
+    if type(target) ~= "table" or type(defaults) ~= "table" then
+        return
+    end
+
+    for key, value in pairs(defaults) do
+        if target[key] == nil then
+            target[key] = DeepCopy(value)
+        elseif type(target[key]) == "table" and type(value) == "table" then
+            ApplyDefaults(target[key], value)
+        end
+    end
+end
+
+local function CopySavedValues(target, source)
+    if type(target) ~= "table" or type(source) ~= "table" then
+        return
+    end
+
+    for key, value in pairs(source) do
+        if key ~= MIGRATION_MARKER then
+            target[key] = DeepCopy(value)
+        end
+    end
+end
+
+local function GetPreferenceScope()
+    if EZOCore and type(EZOCore.GetPreferenceScope) == "function" then
+        local ok, scope = pcall(function()
+            return EZOCore:GetPreferenceScope("ezocursor", "settings")
+        end)
+        if ok and scope == "character" then
+            return "character"
+        end
+    end
+    return "account"
 end
 
 local function MoveGuideColor(colors, fromKey, toKey)
@@ -57,7 +110,30 @@ end
 
 local function EnsureSavedVariables()
     local worldName = GetWorldName()
-    EZO_CURSOR.sv = ZO_SavedVars:NewAccountWide("EZOCursor_Saved", 1, worldName, BuildDefaults())
+    local defaults = BuildDefaults()
+    local scope = GetPreferenceScope()
+    EZO_CURSOR.preferenceScope = scope
+
+    if scope == "character" then
+        EZO_CURSOR.sv = ZO_SavedVars:NewCharacterIdSettings(
+            SAVED_VARIABLES_NAME,
+            SAVED_VARIABLES_VERSION,
+            worldName,
+            defaults)
+        if type(EZO_CURSOR.sv) == "table" and EZO_CURSOR.sv[MIGRATION_MARKER] ~= true then
+            local accountSv = ZO_SavedVars:NewAccountWide(
+                SAVED_VARIABLES_NAME,
+                SAVED_VARIABLES_VERSION,
+                worldName,
+                nil)
+            CopySavedValues(EZO_CURSOR.sv, accountSv)
+            EZO_CURSOR.sv[MIGRATION_MARKER] = true
+        end
+    else
+        EZO_CURSOR.sv = ZO_SavedVars:NewAccountWide(SAVED_VARIABLES_NAME, SAVED_VARIABLES_VERSION, worldName, defaults)
+    end
+
+    ApplyDefaults(EZO_CURSOR.sv, defaults)
     MigrateSavedVariables()
 end
 
