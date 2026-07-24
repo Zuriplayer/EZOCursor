@@ -19,8 +19,8 @@ EZOCursor is in public beta. The current scope is intentionally focused: it adds
 
 Current manifest metadata:
 
-- Addon version: `0.1.14`
-- AddOnVersion: `10014`
+- Addon version: `0.1.16`
+- AddOnVersion: `10016`
 - APIVersion: `101049 101050`
 
 ## Installation
@@ -52,9 +52,9 @@ Current manifest metadata:
 
 ## Settings Panel
 
-EZOCursor hosts its visible settings in `Settings > EZO` when EZOCore is
-available. Without EZOCore, the same controls remain available through the
-standard LibAddonMenu addon settings list.
+EZOCursor registers its complete settings panel in `Settings > EZO` when
+EZOCore is available. Without EZOCore, the same controls remain available
+through the standard LibAddonMenu addon settings list.
 
 Current visible options:
 
@@ -66,6 +66,7 @@ Current visible options:
   - always
   - only in combat
 - Enable or disable the cursor state debug panel.
+- The debug panel follows its own visible setting and remains available even if an internal reticle master flag is disabled.
 - Configure guide-line colors for:
   - no attackable target
   - out of combat: attackable target

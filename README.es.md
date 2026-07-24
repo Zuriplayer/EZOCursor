@@ -19,8 +19,8 @@ EZOCursor está en beta pública. El alcance actual es intencionadamente concret
 
 Metadata actual del manifiesto:
 
-- Versión del addon: `0.1.14`
-- AddOnVersion: `10014`
+- Versión del addon: `0.1.16`
+- AddOnVersion: `10016`
 - APIVersion: `101049 101050`
 
 ## Instalación
@@ -52,9 +52,9 @@ Metadata actual del manifiesto:
 
 ## Panel de Configuración
 
-EZOCursor aloja sus opciones visibles en `Settings > EZO` cuando EZOCore está
-disponible. Sin EZOCore, los mismos controles siguen accesibles mediante la
-lista estándar de ajustes de addons de LibAddonMenu.
+EZOCursor registra su panel completo de ajustes en `Settings > EZO` cuando
+EZOCore está disponible. Sin EZOCore, los mismos controles siguen disponibles
+mediante la lista estándar de ajustes de addons de LibAddonMenu.
 
 Opciones visibles actuales:
 
@@ -66,6 +66,7 @@ Opciones visibles actuales:
   - siempre
   - sólo en combate
 - Activar o desactivar el panel debug de estado del cursor.
+- El panel debug sigue su propio ajuste visible y sigue disponible aunque un indicador maestro interno del retículo esté desactivado.
 - Configurar colores de líneas guía para:
   - sin objetivo atacable
   - sin combate: objetivo atacable

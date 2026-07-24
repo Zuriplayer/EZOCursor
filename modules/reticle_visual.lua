@@ -114,6 +114,10 @@ local function HideGuideAndDebug()
     SetControlHidden(ReticleVisual.debugPanel, true)
 end
 
+local function HideGuides()
+    SetControlHidden(ReticleVisual.guideOverlay, true)
+end
+
 local function RegisterHudFragment(control, fragmentField)
     if ReticleVisual[fragmentField] or not control or not ZO_SimpleSceneFragment then
         return
@@ -180,7 +184,7 @@ local function GetGuideStateText(state)
 end
 
 local function ShouldShowDebugPanel(settings)
-    return IsHudSceneActive() and settings and settings.enabled and settings.debugEnabled == true
+    return IsHudSceneActive() and settings and settings.debugEnabled == true
 end
 
 local function ShouldShowGuides(settings)
@@ -515,7 +519,7 @@ end
 
 local function RefreshGuideState()
     local settings = GetReticleSettings()
-    if not settings or not settings.enabled or (settings.guidesEnabled == false and settings.debugEnabled ~= true) then
+    if not settings or (settings.debugEnabled ~= true and (not settings.enabled or settings.guidesEnabled == false)) then
         HideGuideAndDebug()
         return
     end
@@ -536,7 +540,7 @@ local function RefreshGuideState()
     ApplyGuideState()
 end
 
-local function OnCombatDamage(eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName, sourceType, targetName, targetType)
+local function OnCombatDamage(_eventCode, _result, isError, _abilityName, _abilityGraphic, _abilityActionSlotType, _sourceName, sourceType, targetName, targetType)
     if isError then
         return
     end
@@ -577,7 +581,11 @@ function ReticleVisual.ApplyCurrentState()
         ApplyColor(reticleControl, 1, 1, 1, 1)
         blockOverlay:SetHidden(true)
         guideOverlay:SetHidden(true)
-        SetControlHidden(ReticleVisual.debugPanel, true)
+        if settings.debugEnabled == true then
+            ApplyGuideState()
+        else
+            SetControlHidden(ReticleVisual.debugPanel, true)
+        end
         return
     end
 
@@ -599,13 +607,23 @@ end
 function ReticleVisual.RefreshGuideLayout()
     local reticleControl = GetReticleControl()
     local settings = GetReticleSettings()
-    if not reticleControl or not settings or not settings.enabled then
+    if not reticleControl or not settings then
         HideAddonVisuals()
         return
     end
 
     if not IsHudSceneActive() then
         HideAddonVisuals()
+        return
+    end
+
+    if not settings.enabled then
+        HideGuides()
+        if settings.debugEnabled == true then
+            ApplyGuideState()
+        else
+            SetControlHidden(ReticleVisual.debugPanel, true)
+        end
         return
     end
 
@@ -675,7 +693,7 @@ function ReticleVisual.Start()
         EVENT_MANAGER:RegisterForUpdate(BLOCK_UPDATE_NAME, 100, ReticleVisual.RefreshBlockingState)
     end
 
-    if settings and settings.enabled and (settings.guidesEnabled ~= false or settings.debugEnabled == true) then
+    if settings and ((settings.enabled and settings.guidesEnabled ~= false) or settings.debugEnabled == true) then
         EVENT_MANAGER:RegisterForUpdate(GUIDE_STATE_UPDATE_NAME, GUIDE_STATE_UPDATE_MS, RefreshGuideState)
     end
 end
@@ -697,7 +715,7 @@ function ReticleVisual.Initialize()
         ReticleVisual.RefreshGuideLayout()
     end)
     EVENT_MANAGER:UnregisterForEvent(COMBAT_STATE_EVENT, EVENT_PLAYER_COMBAT_STATE)
-    EVENT_MANAGER:RegisterForEvent(COMBAT_STATE_EVENT, EVENT_PLAYER_COMBAT_STATE, function(eventCode, inCombat)
+    EVENT_MANAGER:RegisterForEvent(COMBAT_STATE_EVENT, EVENT_PLAYER_COMBAT_STATE, function(_eventCode, inCombat)
         ReticleVisual.inCombat = inCombat == true
         if not ReticleVisual.inCombat then
             ReticleVisual.lastCombatDamageMs = 0

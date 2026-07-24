@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.16
+
+- Keeps EZOCursor visible only inside `Settings > EZO` when EZOCore accepts the panel, while preserving the standalone LibAddonMenu panel as a fallback without EZOCore.
+- Preserves the full guide-line display mode and guide-line color option set in the EZOCore settings registration.
+- Makes the cursor state debug panel follow its own visible setting instead of depending on the internal reticle master flag.
+
 ## 0.1.15
 
 - Registers the reticle debug display with EZOCore for family-wide disable control.
