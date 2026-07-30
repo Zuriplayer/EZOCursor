@@ -19,15 +19,15 @@ local BLOCK_SHIELD_TEXTURE = "/EZOCursor/media/reticle/block_shield.dds"
 local GUIDE_HORIZONTAL_TEXTURE = "/EZOCursor/media/reticle/guide_horizontal.dds"
 local GUIDE_VERTICAL_TEXTURE = "/EZOCursor/media/reticle/guide_vertical.dds"
 local GUIDE_THICKNESS = 4
-local TARGET_MARKER_LENGTH = 34
-local TARGET_MARKER_THICKNESS = 7
-local TARGET_MARKER_OFFSET = 18
-local TARGET_MARKER_SIZE = 86
+local TARGET_MARKER_LENGTH = 14
+local TARGET_MARKER_THICKNESS = 3
+local TARGET_MARKER_OFFSET = 11
+local TARGET_MARKER_SIZE = 40
 local BLOCK_ALERT_COST_MULTIPLIER = 5
 local BLOCK_NORMAL_COLOR = { 1, 1, 1, 0.96 }
 local BLOCK_LOW_STAMINA_COLOR = { 1, 0.18, 0.05, 1 }
-local TARGET_MARKER_ATTACKABLE_COLOR = { 0.2, 1, 0.35, 1 }
-local TARGET_MARKER_NO_ATTACKABLE_COLOR = { 1, 0.95, 0.15, 1 }
+local TARGET_MARKER_ATTACKABLE_COLOR = { 0.35, 1, 0.48, 0.86 }
+local TARGET_MARKER_NO_ATTACKABLE_COLOR = { 1, 0.86, 0.25, 0.72 }
 local GUIDE_COLOR_FALLBACKS = {
     noAttackable = { 0.85, 0.85, 0.85, 0.8 },
     attackable = { 0.2, 1, 0.35, 0.95 },
@@ -278,7 +278,7 @@ local function CreateTargetMarkerSegment(parent, name, width, height, anchorPoin
     local segment = WINDOW_MANAGER:CreateControl(name, parent, CT_BACKDROP)
     segment:SetDimensions(width, height)
     segment:SetCenterColor(unpack(TARGET_MARKER_NO_ATTACKABLE_COLOR))
-    segment:SetEdgeColor(0, 0, 0, 1)
+    segment:SetEdgeColor(0, 0, 0, 0)
     segment:SetDrawLayer(DL_OVERLAY)
     segment:SetDrawTier(DT_HIGH)
     if type(segment.SetDrawLevel) == "function" then
@@ -588,7 +588,7 @@ local function ApplyTargetMarkerState(settings)
 
     for _, segment in ipairs(segments) do
         segment:SetCenterColor(unpack(color))
-        segment:SetEdgeColor(0, 0, 0, 1)
+        segment:SetEdgeColor(0, 0, 0, 0)
     end
     overlay:SetHidden(false)
 end

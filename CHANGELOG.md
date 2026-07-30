@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.21
+
+- Softens the center targetability indicator into small translucent inner reticle marks near the focus point.
+
 ## 0.1.20
 
 - Renders the center target marker with solid HUD controls and keeps it updating from the visible guide-line setting instead of the internal reticle master flag.
