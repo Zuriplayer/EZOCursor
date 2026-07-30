@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.20
+
+- Renders the center target marker with solid HUD controls and keeps it updating from the visible guide-line setting instead of the internal reticle master flag.
+
 ## 0.1.19
 
 - Makes the center target marker larger, brighter, and independent from the reticle control tree so attackable target state is visible over the native reticle.

@@ -16,7 +16,6 @@ local SCENE_STATE_CALLBACK_NAME = "SceneStateChanged"
 local DEFAULT_RETICLE_TEXTURE = "EsoUI/Art/Reticle/reticleAnim.dds"
 local CIRCULAR_RETICLE_TEXTURE = "EsoUI/Art/Reticle/reticleAnim-circle.dds"
 local BLOCK_SHIELD_TEXTURE = "/EZOCursor/media/reticle/block_shield.dds"
-local TARGET_MARKER_TEXTURE = "/EZOCursor/media/reticle/guide_pixel.dds"
 local GUIDE_HORIZONTAL_TEXTURE = "/EZOCursor/media/reticle/guide_horizontal.dds"
 local GUIDE_VERTICAL_TEXTURE = "/EZOCursor/media/reticle/guide_vertical.dds"
 local GUIDE_THICKNESS = 4
@@ -165,6 +164,10 @@ local function HideTargetMarker()
     SetControlHidden(ReticleVisual.targetMarkerOverlay, true)
 end
 
+local function ShouldShowTargetMarker(settings)
+    return IsHudSceneActive() and settings and settings.guidesEnabled ~= false
+end
+
 local function RegisterHudFragment(control, fragmentField)
     if ReticleVisual[fragmentField] or not control or not ZO_SimpleSceneFragment then
         return
@@ -272,9 +275,10 @@ local function EnsureBlockOverlay(reticleControl)
 end
 
 local function CreateTargetMarkerSegment(parent, name, width, height, anchorPoint, offsetX, offsetY)
-    local segment = WINDOW_MANAGER:CreateControl(name, parent, CT_TEXTURE)
-    segment:SetTexture(TARGET_MARKER_TEXTURE)
+    local segment = WINDOW_MANAGER:CreateControl(name, parent, CT_BACKDROP)
     segment:SetDimensions(width, height)
+    segment:SetCenterColor(unpack(TARGET_MARKER_NO_ATTACKABLE_COLOR))
+    segment:SetEdgeColor(0, 0, 0, 1)
     segment:SetDrawLayer(DL_OVERLAY)
     segment:SetDrawTier(DT_HIGH)
     if type(segment.SetDrawLevel) == "function" then
@@ -567,7 +571,7 @@ local function ApplyBlockOverlayState(blockOverlay)
 end
 
 local function ApplyTargetMarkerState(settings)
-    if not settings or not settings.enabled or not IsHudSceneActive() then
+    if not ShouldShowTargetMarker(settings) then
         HideTargetMarker()
         return
     end
@@ -583,7 +587,8 @@ local function ApplyTargetMarkerState(settings)
         or TARGET_MARKER_NO_ATTACKABLE_COLOR
 
     for _, segment in ipairs(segments) do
-        segment:SetColor(unpack(color))
+        segment:SetCenterColor(unpack(color))
+        segment:SetEdgeColor(0, 0, 0, 1)
     end
     overlay:SetHidden(false)
 end
@@ -664,8 +669,9 @@ end
 
 local function RefreshGuideState()
     local settings = GetReticleSettings()
-    if not settings or (settings.debugEnabled ~= true and (not settings.enabled or settings.guidesEnabled == false)) then
+    if not settings or (settings.debugEnabled ~= true and settings.guidesEnabled == false) then
         HideGuideAndDebug()
+        HideTargetMarker()
         return
     end
 
@@ -840,7 +846,7 @@ function ReticleVisual.Start()
         EVENT_MANAGER:RegisterForUpdate(BLOCK_UPDATE_NAME, 100, ReticleVisual.RefreshBlockingState)
     end
 
-    if settings and ((settings.enabled and settings.guidesEnabled ~= false) or settings.debugEnabled == true) then
+    if settings and (settings.guidesEnabled ~= false or settings.debugEnabled == true) then
         EVENT_MANAGER:RegisterForUpdate(GUIDE_STATE_UPDATE_NAME, GUIDE_STATE_UPDATE_MS, RefreshGuideState)
     end
 end

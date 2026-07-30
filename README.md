@@ -19,8 +19,8 @@ EZOCursor is in public beta. The current scope is intentionally focused: it adds
 
 Current manifest metadata:
 
-- Addon version: `0.1.19`
-- AddOnVersion: `10019`
+- Addon version: `0.1.20`
+- AddOnVersion: `10020`
 - APIVersion: `101049 101050`
 
 ## Installation
@@ -43,7 +43,7 @@ Current manifest metadata:
   - camera preferred target
   - in combat
   - recent combat damage involving the player
-- Center target marker near the reticle:
+- Solid center target marker near the reticle:
   - green when the current `reticleover` target is attackable
   - yellow when no attackable target is under the reticle
 - HUD/HUD UI scene integration for visual overlays.

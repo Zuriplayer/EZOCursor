@@ -19,8 +19,8 @@ EZOCursor está en beta pública. El alcance actual es intencionadamente concret
 
 Metadata actual del manifiesto:
 
-- Versión del addon: `0.1.19`
-- AddOnVersion: `10019`
+- Versión del addon: `0.1.20`
+- AddOnVersion: `10020`
 - APIVersion: `101049 101050`
 
 ## Instalación
@@ -43,7 +43,7 @@ Metadata actual del manifiesto:
   - objetivo preferente de cámara
   - en combate
   - daño de combate reciente que implica al jugador
-- Marcador central junto al retículo:
+- Marcador central sólido junto al retículo:
   - verde cuando el objetivo actual de `reticleover` es atacable
   - amarillo cuando no hay un objetivo atacable bajo el retículo
 - Integración con escenas HUD/HUD UI para los overlays visuales.
