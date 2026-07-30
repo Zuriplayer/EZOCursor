@@ -20,14 +20,15 @@ local TARGET_MARKER_TEXTURE = "/EZOCursor/media/reticle/guide_pixel.dds"
 local GUIDE_HORIZONTAL_TEXTURE = "/EZOCursor/media/reticle/guide_horizontal.dds"
 local GUIDE_VERTICAL_TEXTURE = "/EZOCursor/media/reticle/guide_vertical.dds"
 local GUIDE_THICKNESS = 4
-local TARGET_MARKER_LENGTH = 20
-local TARGET_MARKER_THICKNESS = 4
-local TARGET_MARKER_OFFSET = 20
+local TARGET_MARKER_LENGTH = 34
+local TARGET_MARKER_THICKNESS = 7
+local TARGET_MARKER_OFFSET = 18
+local TARGET_MARKER_SIZE = 86
 local BLOCK_ALERT_COST_MULTIPLIER = 5
 local BLOCK_NORMAL_COLOR = { 1, 1, 1, 0.96 }
 local BLOCK_LOW_STAMINA_COLOR = { 1, 0.18, 0.05, 1 }
 local TARGET_MARKER_ATTACKABLE_COLOR = { 0.2, 1, 0.35, 1 }
-local TARGET_MARKER_NO_ATTACKABLE_COLOR = { 0.92, 0.92, 0.92, 0.9 }
+local TARGET_MARKER_NO_ATTACKABLE_COLOR = { 1, 0.95, 0.15, 1 }
 local GUIDE_COLOR_FALLBACKS = {
     noAttackable = { 0.85, 0.85, 0.85, 0.8 },
     attackable = { 0.2, 1, 0.35, 0.95 },
@@ -285,19 +286,19 @@ local function CreateTargetMarkerSegment(parent, name, width, height, anchorPoin
     return segment
 end
 
-local function EnsureTargetMarkerOverlay(reticleControl)
+local function EnsureTargetMarkerOverlay()
     if ReticleVisual.targetMarkerOverlay and ReticleVisual.targetMarkerSegments then
         return ReticleVisual.targetMarkerOverlay
     end
 
-    local overlay = WINDOW_MANAGER:CreateControl("EZOCursor_TargetMarkerOverlay", reticleControl:GetParent(), CT_CONTROL)
-    overlay:SetDimensions(1, 1)
+    local overlay = WINDOW_MANAGER:CreateTopLevelWindow("EZOCursor_TargetMarkerOverlay")
+    overlay:SetDimensions(TARGET_MARKER_SIZE, TARGET_MARKER_SIZE)
     overlay:ClearAnchors()
-    overlay:SetAnchor(CENTER, reticleControl, CENTER, 0, 0)
+    overlay:SetAnchor(CENTER, GuiRoot, CENTER, 0, 0)
     overlay:SetDrawLayer(DL_OVERLAY)
     overlay:SetDrawTier(DT_HIGH)
     if type(overlay.SetDrawLevel) == "function" then
-        overlay:SetDrawLevel(2)
+        overlay:SetDrawLevel(10)
     end
     overlay:SetMouseEnabled(false)
     overlay:SetHidden(true)
@@ -342,7 +343,6 @@ local function EnsureTargetMarkerOverlay(reticleControl)
     }
 
     ReticleVisual.targetMarkerOverlay = overlay
-    RegisterHudFragment(overlay, "targetMarkerFragment")
     return overlay
 end
 
@@ -718,7 +718,7 @@ function ReticleVisual.ApplyCurrentState()
 
     RememberOriginalVisuals(reticleControl)
     local blockOverlay = EnsureBlockOverlay(reticleControl)
-    EnsureTargetMarkerOverlay(reticleControl)
+    EnsureTargetMarkerOverlay()
     local guideOverlay = EnsureGuideOverlay(reticleControl)
 
     if not settings.enabled then

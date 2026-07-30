@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.19
+
+- Makes the center target marker larger, brighter, and independent from the reticle control tree so attackable target state is visible over the native reticle.
+
 ## 0.1.18
 
 - Adds a small center target marker that shows attackable target state independently from the existing combat, recent-damage, and guide-line colors.
