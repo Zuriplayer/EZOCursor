@@ -16,12 +16,18 @@ local SCENE_STATE_CALLBACK_NAME = "SceneStateChanged"
 local DEFAULT_RETICLE_TEXTURE = "EsoUI/Art/Reticle/reticleAnim.dds"
 local CIRCULAR_RETICLE_TEXTURE = "EsoUI/Art/Reticle/reticleAnim-circle.dds"
 local BLOCK_SHIELD_TEXTURE = "/EZOCursor/media/reticle/block_shield.dds"
+local TARGET_MARKER_TEXTURE = "/EZOCursor/media/reticle/guide_pixel.dds"
 local GUIDE_HORIZONTAL_TEXTURE = "/EZOCursor/media/reticle/guide_horizontal.dds"
 local GUIDE_VERTICAL_TEXTURE = "/EZOCursor/media/reticle/guide_vertical.dds"
 local GUIDE_THICKNESS = 4
+local TARGET_MARKER_LENGTH = 20
+local TARGET_MARKER_THICKNESS = 4
+local TARGET_MARKER_OFFSET = 20
 local BLOCK_ALERT_COST_MULTIPLIER = 5
 local BLOCK_NORMAL_COLOR = { 1, 1, 1, 0.96 }
 local BLOCK_LOW_STAMINA_COLOR = { 1, 0.18, 0.05, 1 }
+local TARGET_MARKER_ATTACKABLE_COLOR = { 0.2, 1, 0.35, 1 }
+local TARGET_MARKER_NO_ATTACKABLE_COLOR = { 0.92, 0.92, 0.92, 0.9 }
 local GUIDE_COLOR_FALLBACKS = {
     noAttackable = { 0.85, 0.85, 0.85, 0.8 },
     attackable = { 0.2, 1, 0.35, 0.95 },
@@ -62,6 +68,9 @@ ReticleVisual.originalAlpha = nil
 ReticleVisual.originalTexture = nil
 ReticleVisual.blockOverlay = nil
 ReticleVisual.blockFragment = nil
+ReticleVisual.targetMarkerOverlay = nil
+ReticleVisual.targetMarkerFragment = nil
+ReticleVisual.targetMarkerSegments = nil
 ReticleVisual.guideOverlay = nil
 ReticleVisual.guideFragment = nil
 ReticleVisual.horizontalGuide = nil
@@ -137,6 +146,7 @@ end
 
 local function HideAddonVisuals()
     SetControlHidden(ReticleVisual.blockOverlay, true)
+    SetControlHidden(ReticleVisual.targetMarkerOverlay, true)
     SetControlHidden(ReticleVisual.guideOverlay, true)
     SetControlHidden(ReticleVisual.debugPanel, true)
 end
@@ -148,6 +158,10 @@ end
 
 local function HideGuides()
     SetControlHidden(ReticleVisual.guideOverlay, true)
+end
+
+local function HideTargetMarker()
+    SetControlHidden(ReticleVisual.targetMarkerOverlay, true)
 end
 
 local function RegisterHudFragment(control, fragmentField)
@@ -253,6 +267,82 @@ local function EnsureBlockOverlay(reticleControl)
 
     ReticleVisual.blockOverlay = overlay
     RegisterHudFragment(overlay, "blockFragment")
+    return overlay
+end
+
+local function CreateTargetMarkerSegment(parent, name, width, height, anchorPoint, offsetX, offsetY)
+    local segment = WINDOW_MANAGER:CreateControl(name, parent, CT_TEXTURE)
+    segment:SetTexture(TARGET_MARKER_TEXTURE)
+    segment:SetDimensions(width, height)
+    segment:SetDrawLayer(DL_OVERLAY)
+    segment:SetDrawTier(DT_HIGH)
+    if type(segment.SetDrawLevel) == "function" then
+        segment:SetDrawLevel(2)
+    end
+    segment:SetMouseEnabled(false)
+    segment:ClearAnchors()
+    segment:SetAnchor(anchorPoint, parent, CENTER, offsetX, offsetY)
+    return segment
+end
+
+local function EnsureTargetMarkerOverlay(reticleControl)
+    if ReticleVisual.targetMarkerOverlay and ReticleVisual.targetMarkerSegments then
+        return ReticleVisual.targetMarkerOverlay
+    end
+
+    local overlay = WINDOW_MANAGER:CreateControl("EZOCursor_TargetMarkerOverlay", reticleControl:GetParent(), CT_CONTROL)
+    overlay:SetDimensions(1, 1)
+    overlay:ClearAnchors()
+    overlay:SetAnchor(CENTER, reticleControl, CENTER, 0, 0)
+    overlay:SetDrawLayer(DL_OVERLAY)
+    overlay:SetDrawTier(DT_HIGH)
+    if type(overlay.SetDrawLevel) == "function" then
+        overlay:SetDrawLevel(2)
+    end
+    overlay:SetMouseEnabled(false)
+    overlay:SetHidden(true)
+
+    ReticleVisual.targetMarkerSegments = {
+        CreateTargetMarkerSegment(
+            overlay,
+            "EZOCursor_TargetMarkerTop",
+            TARGET_MARKER_LENGTH,
+            TARGET_MARKER_THICKNESS,
+            BOTTOM,
+            0,
+            -TARGET_MARKER_OFFSET
+        ),
+        CreateTargetMarkerSegment(
+            overlay,
+            "EZOCursor_TargetMarkerBottom",
+            TARGET_MARKER_LENGTH,
+            TARGET_MARKER_THICKNESS,
+            TOP,
+            0,
+            TARGET_MARKER_OFFSET
+        ),
+        CreateTargetMarkerSegment(
+            overlay,
+            "EZOCursor_TargetMarkerLeft",
+            TARGET_MARKER_THICKNESS,
+            TARGET_MARKER_LENGTH,
+            RIGHT,
+            -TARGET_MARKER_OFFSET,
+            0
+        ),
+        CreateTargetMarkerSegment(
+            overlay,
+            "EZOCursor_TargetMarkerRight",
+            TARGET_MARKER_THICKNESS,
+            TARGET_MARKER_LENGTH,
+            LEFT,
+            TARGET_MARKER_OFFSET,
+            0
+        ),
+    }
+
+    ReticleVisual.targetMarkerOverlay = overlay
+    RegisterHudFragment(overlay, "targetMarkerFragment")
     return overlay
 end
 
@@ -476,6 +566,28 @@ local function ApplyBlockOverlayState(blockOverlay)
     end
 end
 
+local function ApplyTargetMarkerState(settings)
+    if not settings or not settings.enabled or not IsHudSceneActive() then
+        HideTargetMarker()
+        return
+    end
+
+    local overlay = ReticleVisual.targetMarkerOverlay
+    local segments = ReticleVisual.targetMarkerSegments
+    if not overlay or not segments then
+        return
+    end
+
+    local color = ReticleVisual.targetAttackable
+        and TARGET_MARKER_ATTACKABLE_COLOR
+        or TARGET_MARKER_NO_ATTACKABLE_COLOR
+
+    for _, segment in ipairs(segments) do
+        segment:SetColor(unpack(color))
+    end
+    overlay:SetHidden(false)
+end
+
 local function GetGuideState()
     if not ReticleVisual.targetAttackable then
         return "noAttackable"
@@ -496,6 +608,7 @@ local function ApplyGuideState()
     local state = GetGuideState()
     ReticleVisual.currentGuideState = state
     UpdateDebugPanel(state)
+    ApplyTargetMarkerState(GetReticleSettings())
 
     if not IsHudSceneActive() then
         HideAddonVisuals()
@@ -605,6 +718,7 @@ function ReticleVisual.ApplyCurrentState()
 
     RememberOriginalVisuals(reticleControl)
     local blockOverlay = EnsureBlockOverlay(reticleControl)
+    EnsureTargetMarkerOverlay(reticleControl)
     local guideOverlay = EnsureGuideOverlay(reticleControl)
 
     if not settings.enabled then
@@ -612,6 +726,7 @@ function ReticleVisual.ApplyCurrentState()
         reticleControl:SetAlpha(ReticleVisual.originalAlpha or 1)
         ApplyColor(reticleControl, 1, 1, 1, 1)
         blockOverlay:SetHidden(true)
+        HideTargetMarker()
         guideOverlay:SetHidden(true)
         if settings.debugEnabled == true then
             ApplyGuideState()

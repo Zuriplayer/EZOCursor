@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.18
+
+- Adds a small center target marker that shows attackable target state independently from the existing combat, recent-damage, and guide-line colors.
+
 ## 0.1.17
 
 - Makes the cursor state debug panel use the same HUD scene detection pattern as EZOhud and creates it as a top-level HUD window so it appears reliably after leaving addon settings.

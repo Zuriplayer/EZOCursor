@@ -19,8 +19,8 @@ EZOCursor está en beta pública. El alcance actual es intencionadamente concret
 
 Metadata actual del manifiesto:
 
-- Versión del addon: `0.1.16`
-- AddOnVersion: `10016`
+- Versión del addon: `0.1.18`
+- AddOnVersion: `10018`
 - APIVersion: `101049 101050`
 
 ## Instalación
@@ -43,6 +43,9 @@ Metadata actual del manifiesto:
   - objetivo preferente de cámara
   - en combate
   - daño de combate reciente que implica al jugador
+- Marcador central junto al retículo:
+  - verde cuando el objetivo actual de `reticleover` es atacable
+  - gris claro cuando no hay un objetivo atacable bajo el retículo
 - Integración con escenas HUD/HUD UI para los overlays visuales.
 - Overlay de escudo de bloqueo mostrado sólo cuando se detecta bloqueo activo.
 - Aviso de baja estamina al bloquear cuando la estamina actual está por debajo de cinco veces el `Block Cost` de Advanced Stats.
@@ -79,7 +82,7 @@ Existen algunos ajustes internos o por defecto en SavedVariables, como `enabled`
 ## Estados y Límites de Seguridad
 
 - `objetivo preferente de cámara` usa la señal `IsGameCameraPreferredTargetValid()` de ESO. No garantiza identidad exacta del objetivo ni rango cuerpo a cuerpo.
-- El estado de objetivo atacable usa señales de atacabilidad de ESO para `reticleover`; no es una comprobación de rango.
+- El estado de objetivo atacable usa señales de atacabilidad de ESO para `reticleover`; no es una comprobación de rango. El marcador central expone esta señal separada de los colores de combate y daño reciente.
 - El daño de combate reciente sigue eventos reales de combate que implican al jugador.
 - El aviso de bloqueo usa la estamina actual y el `Block Cost` de Advanced Stats; es un umbral de alerta, no una predicción de cada golpe entrante.
 - Los controles visuales deben aparecer sólo en escenas normales de HUD y HUD UI.
@@ -98,7 +101,7 @@ Durante la beta, prueba estos escenarios:
 - Cambiar cada color de línea guía y confirmar que el estado visual se actualiza.
 - Confirmar que cada sección de ajustes muestra el icono informativo morado y abre su tooltip general al pasar el cursor.
 - Confirmar que los tooltips específicos de cada campo se abren desde sus controles.
-- Apuntar a ningún objetivo, objetivos no atacables y objetivos atacables.
+- Apuntar a ningún objetivo, objetivos no atacables y objetivos atacables; confirmar que el marcador central cambia entre gris claro y verde.
 - Entrar y salir de combate.
 - Hacer o recibir daño y confirmar el comportamiento del color de daño reciente.
 - Confirmar que los overlays se ocultan en inventario, mapa, Champion Points, crafting, Tales of Tribute, configuración de addons y otras escenas que no sean HUD.
