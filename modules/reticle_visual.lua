@@ -84,17 +84,49 @@ local function GetReticleControl()
     return ZO_ReticleContainerReticle
 end
 
-local function IsHudSceneActive()
-    if type(SCENE_MANAGER) ~= "table" or type(SCENE_MANAGER.GetCurrentScene) ~= "function" then
-        return true
+local function GetCurrentSceneName()
+    if type(SCENE_MANAGER) ~= "table" then
+        return nil
+    end
+
+    if type(SCENE_MANAGER.GetCurrentSceneName) == "function" then
+        return SCENE_MANAGER:GetCurrentSceneName()
+    end
+
+    if type(SCENE_MANAGER.GetCurrentScene) ~= "function" then
+        return nil
     end
 
     local currentScene = SCENE_MANAGER:GetCurrentScene()
-    if not currentScene or type(currentScene.GetName) ~= "function" then
-        return false
+    if currentScene and type(currentScene.GetName) == "function" then
+        return currentScene:GetName()
+    end
+    if currentScene and currentScene.name then
+        return currentScene.name
     end
 
-    return HUD_SCENE_NAMES[currentScene:GetName()] == true
+    return nil
+end
+
+local function IsHudSceneActive()
+    if type(SCENE_MANAGER) ~= "table" then
+        return true
+    end
+
+    if type(SCENE_MANAGER.IsShowing) == "function" then
+        for sceneName in pairs(HUD_SCENE_NAMES) do
+            if SCENE_MANAGER:IsShowing(sceneName) then
+                return true
+            end
+        end
+    end
+
+    local currentSceneName = GetCurrentSceneName()
+    if currentSceneName then
+        return HUD_SCENE_NAMES[currentSceneName] == true
+    end
+
+    return true
 end
 
 local function SetControlHidden(control, hidden)
@@ -268,7 +300,7 @@ local function EnsureDebugPanel()
         return ReticleVisual.debugPanel
     end
 
-    local panel = WINDOW_MANAGER:CreateControl("EZOCursor_DebugPanel", GuiRoot, CT_CONTROL)
+    local panel = WINDOW_MANAGER:CreateTopLevelWindow("EZOCursor_DebugPanel")
     panel:SetDimensions(330, 276)
     panel:ClearAnchors()
     panel:SetAnchor(RIGHT, GuiRoot, RIGHT, -80, 0)

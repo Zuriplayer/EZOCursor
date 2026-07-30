@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.17
+
+- Makes the cursor state debug panel use the same HUD scene detection pattern as EZOhud and creates it as a top-level HUD window so it appears reliably after leaving addon settings.
+
 ## 0.1.16
 
 - Keeps EZOCursor visible only inside `Settings > EZO` when EZOCore accepts the panel, while preserving the standalone LibAddonMenu panel as a fallback without EZOCore.
