@@ -77,11 +77,11 @@ local function SetGuideColor(colorKey, red, green, blue, alpha)
     RefreshReticleVisuals()
 end
 
-local function BuildGuideColorOption(colorKey, nameStringId)
+local function BuildGuideColorOption(colorKey, nameStringId, tooltipStringId)
     return {
         type = "colorpicker",
         name = GetString(nameStringId),
-        tooltip = GetString(SI_EZOCURSOR_OPTION_GUIDE_COLOR_TOOLTIP),
+        tooltip = GetString(tooltipStringId),
         getFunc = function()
             return GetGuideColor(colorKey)
         end,
@@ -146,6 +146,19 @@ local function BuildOptions()
             width = "full",
         },
         LAM.CreateInfoHeader(
+            GetString(SI_EZOCURSOR_OPTION_TARGET_COLORS_HEADER),
+            GetString(SI_EZOCURSOR_OPTION_TARGET_COLORS_HEADER_TOOLTIP)
+        ),
+        BuildGuideColorOption("noAttackable", SI_EZOCURSOR_OPTION_GUIDE_COLOR_NO_ATTACKABLE, SI_EZOCURSOR_OPTION_TARGET_COLOR_TOOLTIP),
+        BuildGuideColorOption("attackable", SI_EZOCURSOR_OPTION_GUIDE_COLOR_ATTACKABLE, SI_EZOCURSOR_OPTION_TARGET_COLOR_TOOLTIP),
+        BuildGuideColorOption("cameraPreferred", SI_EZOCURSOR_OPTION_GUIDE_COLOR_CAMERA_PREFERRED, SI_EZOCURSOR_OPTION_TARGET_COLOR_TOOLTIP),
+        LAM.CreateInfoHeader(
+            GetString(SI_EZOCURSOR_OPTION_COMBAT_COLORS_HEADER),
+            GetString(SI_EZOCURSOR_OPTION_COMBAT_COLORS_HEADER_TOOLTIP)
+        ),
+        BuildGuideColorOption("combat", SI_EZOCURSOR_OPTION_GUIDE_COLOR_COMBAT, SI_EZOCURSOR_OPTION_COMBAT_COLOR_TOOLTIP),
+        BuildGuideColorOption("combatDamage", SI_EZOCURSOR_OPTION_GUIDE_COLOR_COMBAT_DAMAGE, SI_EZOCURSOR_OPTION_COMBAT_COLOR_TOOLTIP),
+        LAM.CreateInfoHeader(
             GetString(SI_EZOCURSOR_OPTION_DEBUG_HEADER),
             GetString(SI_EZOCURSOR_OPTION_DEBUG_HEADER_TOOLTIP)
         ),
@@ -167,15 +180,6 @@ local function BuildOptions()
             default = false,
             width = "full",
         },
-        LAM.CreateInfoHeader(
-            GetString(SI_EZOCURSOR_OPTION_GUIDE_COLORS_HEADER),
-            GetString(SI_EZOCURSOR_OPTION_GUIDE_COLORS_HEADER_TOOLTIP)
-        ),
-        BuildGuideColorOption("noAttackable", SI_EZOCURSOR_OPTION_GUIDE_COLOR_NO_ATTACKABLE),
-        BuildGuideColorOption("attackable", SI_EZOCURSOR_OPTION_GUIDE_COLOR_ATTACKABLE),
-        BuildGuideColorOption("cameraPreferred", SI_EZOCURSOR_OPTION_GUIDE_COLOR_CAMERA_PREFERRED),
-        BuildGuideColorOption("combat", SI_EZOCURSOR_OPTION_GUIDE_COLOR_COMBAT),
-        BuildGuideColorOption("combatDamage", SI_EZOCURSOR_OPTION_GUIDE_COLOR_COMBAT_DAMAGE),
     }
 end
 

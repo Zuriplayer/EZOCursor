@@ -19,8 +19,8 @@ EZOCursor is in public beta. The current scope is intentionally focused: it adds
 
 Current manifest metadata:
 
-- Addon version: `0.1.22`
-- AddOnVersion: `10022`
+- Addon version: `0.1.23`
+- AddOnVersion: `10023`
 - APIVersion: `101049 101050`
 
 ## Installation
@@ -36,17 +36,13 @@ Current manifest metadata:
 ## Implemented Features
 
 - Optional replacement of the base ESO reticle texture with ESO's circular reticle texture.
-- Full-screen horizontal and vertical guide lines crossing at the reticle point.
-- Dynamic guide-line colors based on current ESO API state:
-  - no attackable target
-  - attackable target
-  - camera preferred target
-  - in combat
-  - recent combat damage involving the player
-- Center segment of the guide-line cross near the focus point:
-  - green when the current `reticleover` target is attackable
-  - yellow when no attackable target is under the reticle
-  - the rest of the guide lines keeps the configured state color
+- A center target indicator and outer full-screen horizontal and vertical guide lines.
+- Target and combat information use separate visual areas with no overlapping pixels:
+  - the 64 px center cross shows the configured target color: no attackable target, attackable target, or camera preferred target
+  - camera preferred has priority in the center whenever ESO reports `IsGameCameraPreferredTargetValid()`
+  - outside combat, visible outer lines use the same target color as the center
+  - in combat, the outer lines use the configured combat color while the center continues to show target state
+  - combat damage briefly flashes the outer lines with the configured recent-damage color for 600 ms
 - HUD/HUD UI scene integration for visual overlays.
 - Block shield overlay shown only when active blocking is detected.
 - Low-stamina block warning when current stamina is below five times the Advanced Stats `Block Cost`.
@@ -65,26 +61,27 @@ Current visible options:
 - Purple informational section headers with a 26 px info icon.
 - General section help is attached to each section header tooltip.
 - Field-specific help is attached to the tooltip of each control.
-- Enable or disable screen guide lines.
-- Choose when guide lines are shown:
+- Enable or disable the center indicator and outer screen guides together.
+- Choose when the outer guide lines are shown; the center target indicator remains visible while cursor guides are enabled:
   - always
   - only in combat
 - Enable or disable the cursor state debug panel.
 - The debug panel follows its own visible setting and remains available even if an internal reticle master flag is disabled.
-- Configure guide-line colors for:
+- Configure target colors used by the center indicator and, outside combat, by visible outer lines:
   - no attackable target
-  - out of combat: attackable target
+  - attackable target
   - camera preferred target
+- Configure combat colors used by the outer lines:
   - in combat
-  - recent combat damage
+  - brief recent-combat-damage flash
 
 Some internal/default reticle settings exist in SavedVariables, such as `enabled`, `blockIndicatorEnabled`, `useCircularReticle`, and `idleAlpha`, but they are not exposed as LibAddonMenu controls in the current beta.
 
 ## State and Safety Limits
 
-- `camera preferred target` uses ESO's `IsGameCameraPreferredTargetValid()` signal. It does not guarantee exact target identity or melee range.
-- Attackable target state uses ESO attackability signals for `reticleover`; it is not a range check. The center marker exposes this signal separately from combat and recent-damage colors.
-- Recent combat damage follows real combat events involving the player.
+- `camera preferred target` uses ESO's `IsGameCameraPreferredTargetValid()` signal. It has visual priority in the center, but it does not guarantee exact target identity or melee range.
+- Attackable target state uses ESO attackability signals for `reticleover`; it is not a range check. The center indicator exposes target state independently from the outer combat colors.
+- Recent combat damage follows real combat events involving the player. Each accepted event restarts the 600 ms outer-line flash.
 - The block warning uses current stamina and Advanced Stats `Block Cost`; it is an alert threshold, not a prediction of every incoming hit.
 - Visual controls are intended to appear only in normal HUD and HUD UI scenes.
 - EZOCursor does not automate combat, movement, targeting, input, keybinds, blocking, attacks, menu navigation, or vanilla UI actions.
@@ -97,14 +94,14 @@ Please test these scenarios during beta:
 - Login and `/reloadui` without Lua errors.
 - Open EZOCursor from `Settings > EZO`, or from the LibAddonMenu fallback when
   EZOCore is disabled.
-- Enable and disable screen guide lines.
-- Switch guide-line mode between `Always` and `In combat`.
-- Change each guide-line color and confirm the visual state updates.
+- Enable and disable the center indicator and outer guide lines together.
+- Switch outer-guide mode between `Always` and `In combat`; confirm the center indicator remains visible in both modes.
+- Change each target and combat color and confirm the corresponding visual area updates.
 - Confirm each settings section shows the purple info icon and opens its general tooltip on hover.
 - Confirm field-specific tooltips open from their controls.
-- Aim at no target, non-attackable targets, and attackable targets; confirm only the center segment of the guide-line cross changes between yellow and green.
-- Enter and leave combat.
-- Deal or receive damage and confirm recent-combat color behavior.
+- Outside combat, aim at no target, attackable targets, and camera-preferred targets; confirm the center and visible outer lines use gray, green, and blue by default.
+- Enter combat and confirm the outer lines turn red while the center continues to report gray, green, or blue target state without color blending.
+- Deal or receive damage and confirm the outer lines flash orange briefly before returning to red.
 - Confirm overlays hide in inventory, map, Champion Points, crafting, Tales of Tribute, addon settings, and other non-HUD scenes.
 - Confirm the block shield appears only while the character is actively blocking.
 - Confirm the block shield changes to warning color when stamina is below `Block Cost * 5`.

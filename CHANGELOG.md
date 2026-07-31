@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.23
+
+- Separates target and combat state into a non-overlapping center indicator and outer guide segments.
+- Gives camera-preferred state priority in the center, keeps target feedback visible in combat, and shortens recent damage to a 600 ms outer-line flash.
+- Groups target and combat colors separately in settings without changing existing SavedVariables keys.
+
 ## 0.1.22
 
 - Moves the targetability color into the center segment of the guide-line cross so the rest of the horizontal and vertical guides keep their configured state color.

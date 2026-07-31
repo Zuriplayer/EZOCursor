@@ -19,12 +19,10 @@ local BLOCK_SHIELD_TEXTURE = "/EZOCursor/media/reticle/block_shield.dds"
 local GUIDE_HORIZONTAL_TEXTURE = "/EZOCursor/media/reticle/guide_horizontal.dds"
 local GUIDE_VERTICAL_TEXTURE = "/EZOCursor/media/reticle/guide_vertical.dds"
 local GUIDE_THICKNESS = 4
-local TARGET_MARKER_LENGTH = 64
+local TARGET_INDICATOR_LENGTH = 64
 local BLOCK_ALERT_COST_MULTIPLIER = 5
 local BLOCK_NORMAL_COLOR = { 1, 1, 1, 0.96 }
 local BLOCK_LOW_STAMINA_COLOR = { 1, 0.18, 0.05, 1 }
-local TARGET_MARKER_ATTACKABLE_COLOR = { 0.2, 1, 0.35, 0.96 }
-local TARGET_MARKER_NO_ATTACKABLE_COLOR = { 1, 0.86, 0.25, 0.92 }
 local GUIDE_COLOR_FALLBACKS = {
     noAttackable = { 0.85, 0.85, 0.85, 0.8 },
     attackable = { 0.2, 1, 0.35, 0.95 },
@@ -41,9 +39,9 @@ local GUIDE_STATE_STRING_ID_NAMES = {
 }
 local GUIDE_STATE_UPDATE_MS = 150
 local PREFERRED_TARGET_UPDATE_MS = 250
-local COMBAT_DAMAGE_LOCK_MS = 10000
+local COMBAT_DAMAGE_FLASH_MS = 600
 local DEBUG_HISTORY_LIMIT = 5
-local DEBUG_ROW_COUNT = 10
+local DEBUG_ROW_COUNT = 11
 local DAMAGE_RESULTS = {
     ACTION_RESULT_DAMAGE,
     ACTION_RESULT_CRITICAL_DAMAGE,
@@ -67,8 +65,7 @@ ReticleVisual.blockOverlay = nil
 ReticleVisual.blockFragment = nil
 ReticleVisual.guideOverlay = nil
 ReticleVisual.guideFragment = nil
-ReticleVisual.horizontalGuide = nil
-ReticleVisual.verticalGuide = nil
+ReticleVisual.outerGuides = nil
 ReticleVisual.horizontalTargetGuide = nil
 ReticleVisual.verticalTargetGuide = nil
 ReticleVisual.inCombat = false
@@ -79,6 +76,7 @@ ReticleVisual.lastPreferredCheckMs = 0
 ReticleVisual.lastCombatDamageMs = 0
 ReticleVisual.playerName = nil
 ReticleVisual.currentGuideState = nil
+ReticleVisual.currentTargetState = nil
 ReticleVisual.stateHistory = {}
 ReticleVisual.debugPanel = nil
 ReticleVisual.debugFragment = nil
@@ -155,12 +153,18 @@ local function HideGuides()
     SetControlHidden(ReticleVisual.guideOverlay, true)
 end
 
-local function HideTargetMarker()
+local function HideOuterGuides()
+    for _, control in pairs(ReticleVisual.outerGuides or {}) do
+        SetControlHidden(control, true)
+    end
+end
+
+local function HideTargetIndicator()
     SetControlHidden(ReticleVisual.horizontalTargetGuide, true)
     SetControlHidden(ReticleVisual.verticalTargetGuide, true)
 end
 
-local function ShouldShowTargetMarker(settings)
+local function ShouldShowTargetIndicator(settings)
     return IsHudSceneActive() and settings and settings.guidesEnabled ~= false
 end
 
@@ -233,12 +237,8 @@ local function ShouldShowDebugPanel(settings)
     return IsHudSceneActive() and settings and settings.debugEnabled == true
 end
 
-local function ShouldShowGuides(settings)
-    if not IsHudSceneActive() then
-        return false
-    end
-
-    if not settings or settings.guidesEnabled == false then
+local function ShouldShowOuterGuides(settings)
+    if not ShouldShowTargetIndicator(settings) then
         return false
     end
 
@@ -247,6 +247,17 @@ local function ShouldShowGuides(settings)
         return ReticleVisual.inCombat == true
     end
     return true
+end
+
+local function CreateGuideSegment(name, parent, texture, color)
+    local control = WINDOW_MANAGER:CreateControl(name, parent, CT_TEXTURE)
+    control:SetTexture(texture)
+    control:SetColor(unpack(color))
+    control:SetDrawLayer(DL_OVERLAY)
+    control:SetDrawTier(DT_HIGH)
+    control:SetMouseEnabled(false)
+    control:ClearAnchors()
+    return control
 end
 
 local function EnsureBlockOverlay(reticleControl)
@@ -272,8 +283,7 @@ end
 
 local function EnsureGuideOverlay(reticleControl)
     if ReticleVisual.guideOverlay
-        and ReticleVisual.horizontalGuide
-        and ReticleVisual.verticalGuide
+        and ReticleVisual.outerGuides
         and ReticleVisual.horizontalTargetGuide
         and ReticleVisual.verticalTargetGuide then
         return ReticleVisual.guideOverlay
@@ -288,47 +298,39 @@ local function EnsureGuideOverlay(reticleControl)
     overlay:SetMouseEnabled(false)
     overlay:SetHidden(true)
 
-    local horizontalGuide = WINDOW_MANAGER:CreateControl("EZOCursor_GuideHorizontal", overlay, CT_TEXTURE)
-    horizontalGuide:SetTexture(GUIDE_HORIZONTAL_TEXTURE)
-    horizontalGuide:SetColor(unpack(GetGuideColor("noAttackable")))
-    horizontalGuide:SetDrawLayer(DL_OVERLAY)
-    horizontalGuide:SetDrawTier(DT_HIGH)
-    horizontalGuide:SetMouseEnabled(false)
-    horizontalGuide:ClearAnchors()
-    horizontalGuide:SetAnchor(CENTER, overlay, CENTER, 0, 0)
+    local initialColor = GetGuideColor("noAttackable")
+    local halfTargetLength = TARGET_INDICATOR_LENGTH / 2
+    local outerGuides = {
+        left = CreateGuideSegment("EZOCursor_GuideHorizontalLeft", overlay, GUIDE_HORIZONTAL_TEXTURE, initialColor),
+        right = CreateGuideSegment("EZOCursor_GuideHorizontalRight", overlay, GUIDE_HORIZONTAL_TEXTURE, initialColor),
+        top = CreateGuideSegment("EZOCursor_GuideVerticalTop", overlay, GUIDE_VERTICAL_TEXTURE, initialColor),
+        bottom = CreateGuideSegment("EZOCursor_GuideVerticalBottom", overlay, GUIDE_VERTICAL_TEXTURE, initialColor),
+    }
+    outerGuides.left:SetAnchor(RIGHT, overlay, CENTER, -halfTargetLength, 0)
+    outerGuides.right:SetAnchor(LEFT, overlay, CENTER, halfTargetLength, 0)
+    outerGuides.top:SetAnchor(BOTTOM, overlay, CENTER, 0, -halfTargetLength)
+    outerGuides.bottom:SetAnchor(TOP, overlay, CENTER, 0, halfTargetLength)
 
-    local verticalGuide = WINDOW_MANAGER:CreateControl("EZOCursor_GuideVertical", overlay, CT_TEXTURE)
-    verticalGuide:SetTexture(GUIDE_VERTICAL_TEXTURE)
-    verticalGuide:SetColor(unpack(GetGuideColor("noAttackable")))
-    verticalGuide:SetDrawLayer(DL_OVERLAY)
-    verticalGuide:SetDrawTier(DT_HIGH)
-    verticalGuide:SetMouseEnabled(false)
-    verticalGuide:ClearAnchors()
-    verticalGuide:SetAnchor(CENTER, overlay, CENTER, 0, 0)
-
-    local horizontalTargetGuide = WINDOW_MANAGER:CreateControl("EZOCursor_GuideTargetHorizontal", overlay, CT_TEXTURE)
-    horizontalTargetGuide:SetTexture(GUIDE_HORIZONTAL_TEXTURE)
-    horizontalTargetGuide:SetDimensions(TARGET_MARKER_LENGTH, GUIDE_THICKNESS)
-    horizontalTargetGuide:SetColor(unpack(TARGET_MARKER_NO_ATTACKABLE_COLOR))
-    horizontalTargetGuide:SetDrawLayer(DL_OVERLAY)
-    horizontalTargetGuide:SetDrawTier(DT_HIGH)
-    horizontalTargetGuide:SetMouseEnabled(false)
-    horizontalTargetGuide:ClearAnchors()
+    local horizontalTargetGuide = CreateGuideSegment(
+        "EZOCursor_GuideTargetHorizontal",
+        overlay,
+        GUIDE_HORIZONTAL_TEXTURE,
+        initialColor
+    )
+    horizontalTargetGuide:SetDimensions(TARGET_INDICATOR_LENGTH, GUIDE_THICKNESS)
     horizontalTargetGuide:SetAnchor(CENTER, overlay, CENTER, 0, 0)
 
-    local verticalTargetGuide = WINDOW_MANAGER:CreateControl("EZOCursor_GuideTargetVertical", overlay, CT_TEXTURE)
-    verticalTargetGuide:SetTexture(GUIDE_VERTICAL_TEXTURE)
-    verticalTargetGuide:SetDimensions(GUIDE_THICKNESS, TARGET_MARKER_LENGTH)
-    verticalTargetGuide:SetColor(unpack(TARGET_MARKER_NO_ATTACKABLE_COLOR))
-    verticalTargetGuide:SetDrawLayer(DL_OVERLAY)
-    verticalTargetGuide:SetDrawTier(DT_HIGH)
-    verticalTargetGuide:SetMouseEnabled(false)
-    verticalTargetGuide:ClearAnchors()
+    local verticalTargetGuide = CreateGuideSegment(
+        "EZOCursor_GuideTargetVertical",
+        overlay,
+        GUIDE_VERTICAL_TEXTURE,
+        initialColor
+    )
+    verticalTargetGuide:SetDimensions(GUIDE_THICKNESS, TARGET_INDICATOR_LENGTH)
     verticalTargetGuide:SetAnchor(CENTER, overlay, CENTER, 0, 0)
 
     ReticleVisual.guideOverlay = overlay
-    ReticleVisual.horizontalGuide = horizontalGuide
-    ReticleVisual.verticalGuide = verticalGuide
+    ReticleVisual.outerGuides = outerGuides
     ReticleVisual.horizontalTargetGuide = horizontalTargetGuide
     ReticleVisual.verticalTargetGuide = verticalTargetGuide
     RegisterHudFragment(overlay, "guideFragment")
@@ -341,7 +343,7 @@ local function EnsureDebugPanel()
     end
 
     local panel = WINDOW_MANAGER:CreateTopLevelWindow("EZOCursor_DebugPanel")
-    panel:SetDimensions(330, 276)
+    panel:SetDimensions(330, 306)
     panel:ClearAnchors()
     panel:SetAnchor(RIGHT, GuiRoot, RIGHT, -80, 0)
     panel:SetDrawLayer(DL_OVERLAY)
@@ -392,10 +394,10 @@ local function TrackGuideState(state)
     end
 end
 
-local function IsCombatDamageLocked()
+local function IsCombatDamageActive()
     return ReticleVisual.inCombat == true
         and ReticleVisual.lastCombatDamageMs > 0
-        and GetNowMs() - ReticleVisual.lastCombatDamageMs <= COMBAT_DAMAGE_LOCK_MS
+        and GetNowMs() - ReticleVisual.lastCombatDamageMs <= COMBAT_DAMAGE_FLASH_MS
 end
 
 local function GetBooleanText(value)
@@ -419,7 +421,7 @@ local function SetDebugRow(index, labelStringId, valueText, active)
     end
 end
 
-local function UpdateDebugPanel(state)
+local function UpdateDebugPanel(outerState, targetState)
     local settings = GetReticleSettings()
     if not ShouldShowDebugPanel(settings) then
         SetControlHidden(ReticleVisual.debugPanel, true)
@@ -427,19 +429,20 @@ local function UpdateDebugPanel(state)
     end
 
     local panel = EnsureDebugPanel()
-    TrackGuideState(state)
+    TrackGuideState(outerState)
     panel:SetHidden(false)
 
-    SetDebugRow(1, SI_EZOCURSOR_DEBUG_ACTIVE_PREFIX, GetGuideStateText(state), true)
-    SetDebugRow(2, SI_EZOCURSOR_DEBUG_ATTACKABLE_PREFIX, GetBooleanText(ReticleVisual.targetAttackable), ReticleVisual.targetAttackable)
-    SetDebugRow(3, SI_EZOCURSOR_DEBUG_CAMERA_PREFERRED_PREFIX, GetBooleanText(ReticleVisual.preferredTargetValid), ReticleVisual.preferredTargetValid)
-    SetDebugRow(4, SI_EZOCURSOR_DEBUG_COMBAT_PREFIX, GetBooleanText(ReticleVisual.inCombat), ReticleVisual.inCombat)
-    SetDebugRow(5, SI_EZOCURSOR_DEBUG_RECENT_DAMAGE_PREFIX, GetBooleanText(IsCombatDamageLocked()), IsCombatDamageLocked())
-    SetDebugRow(6, SI_EZOCURSOR_DEBUG_HUD_PREFIX, GetBooleanText(IsHudSceneActive()), IsHudSceneActive())
-    SetDebugRow(7, SI_EZOCURSOR_DEBUG_BLOCKING_PREFIX, GetBooleanText(ReticleVisual.isBlocking), ReticleVisual.isBlocking)
-    SetDebugRow(8, SI_EZOCURSOR_DEBUG_BLOCK_COST_PREFIX, tostring(ReticleVisual.blockCost or 0), false)
-    SetDebugRow(9, SI_EZOCURSOR_DEBUG_STAMINA_PREFIX, tostring(ReticleVisual.currentStamina or 0), ReticleVisual.isBlockStaminaLow)
-    SetDebugRow(10, SI_EZOCURSOR_DEBUG_PREVIOUS_PREFIX, ReticleVisual.stateHistory[2] and GetGuideStateText(ReticleVisual.stateHistory[2]) or "-", false)
+    SetDebugRow(1, SI_EZOCURSOR_DEBUG_OUTER_PREFIX, GetGuideStateText(outerState), true)
+    SetDebugRow(2, SI_EZOCURSOR_DEBUG_CENTER_PREFIX, GetGuideStateText(targetState), true)
+    SetDebugRow(3, SI_EZOCURSOR_DEBUG_ATTACKABLE_PREFIX, GetBooleanText(ReticleVisual.targetAttackable), ReticleVisual.targetAttackable)
+    SetDebugRow(4, SI_EZOCURSOR_DEBUG_CAMERA_PREFERRED_PREFIX, GetBooleanText(ReticleVisual.preferredTargetValid), ReticleVisual.preferredTargetValid)
+    SetDebugRow(5, SI_EZOCURSOR_DEBUG_COMBAT_PREFIX, GetBooleanText(ReticleVisual.inCombat), ReticleVisual.inCombat)
+    SetDebugRow(6, SI_EZOCURSOR_DEBUG_RECENT_DAMAGE_PREFIX, GetBooleanText(IsCombatDamageActive()), IsCombatDamageActive())
+    SetDebugRow(7, SI_EZOCURSOR_DEBUG_HUD_PREFIX, GetBooleanText(IsHudSceneActive()), IsHudSceneActive())
+    SetDebugRow(8, SI_EZOCURSOR_DEBUG_BLOCKING_PREFIX, GetBooleanText(ReticleVisual.isBlocking), ReticleVisual.isBlocking)
+    SetDebugRow(9, SI_EZOCURSOR_DEBUG_BLOCK_COST_PREFIX, tostring(ReticleVisual.blockCost or 0), false)
+    SetDebugRow(10, SI_EZOCURSOR_DEBUG_STAMINA_PREFIX, tostring(ReticleVisual.currentStamina or 0), ReticleVisual.isBlockStaminaLow)
+    SetDebugRow(11, SI_EZOCURSOR_DEBUG_PREVIOUS_PREFIX, ReticleVisual.stateHistory[2] and GetGuideStateText(ReticleVisual.stateHistory[2]) or "-", false)
 end
 
 local function RememberOriginalVisuals(reticleControl)
@@ -516,9 +519,9 @@ local function ApplyBlockOverlayState(blockOverlay)
     end
 end
 
-local function ApplyTargetMarkerState(settings)
-    if not ShouldShowTargetMarker(settings) or not ShouldShowGuides(settings) then
-        HideTargetMarker()
+local function ApplyTargetIndicatorState(settings, targetState)
+    if not ShouldShowTargetIndicator(settings) then
+        HideTargetIndicator()
         return
     end
 
@@ -526,9 +529,7 @@ local function ApplyTargetMarkerState(settings)
         return
     end
 
-    local color = ReticleVisual.targetAttackable
-        and TARGET_MARKER_ATTACKABLE_COLOR
-        or TARGET_MARKER_NO_ATTACKABLE_COLOR
+    local color = GetGuideColor(targetState)
 
     ReticleVisual.horizontalTargetGuide:SetColor(unpack(color))
     ReticleVisual.verticalTargetGuide:SetColor(unpack(color))
@@ -536,53 +537,83 @@ local function ApplyTargetMarkerState(settings)
     ReticleVisual.verticalTargetGuide:SetHidden(false)
 end
 
-local function GetGuideState()
-    if not ReticleVisual.targetAttackable then
-        return "noAttackable"
-    end
-
+local function GetTargetState()
     if ReticleVisual.preferredTargetValid then
         return "cameraPreferred"
     end
 
-    if ReticleVisual.inCombat then
-        return IsCombatDamageLocked() and "combatDamage" or "combat"
+    if ReticleVisual.targetAttackable then
+        return "attackable"
     end
 
-    return "attackable"
+    return "noAttackable"
+end
+
+local function GetOuterGuideState(targetState)
+    if ReticleVisual.inCombat then
+        return IsCombatDamageActive() and "combatDamage" or "combat"
+    end
+
+    return targetState
+end
+
+local function ResizeGuideSegments()
+    if not ReticleVisual.outerGuides
+        or not ReticleVisual.horizontalTargetGuide
+        or not ReticleVisual.verticalTargetGuide then
+        return
+    end
+
+    local screenWidth = GuiRoot:GetWidth()
+    local screenHeight = GuiRoot:GetHeight()
+    if type(screenWidth) ~= "number" or type(screenHeight) ~= "number" then
+        return
+    end
+
+    local horizontalLength = math.max(0, (screenWidth - TARGET_INDICATOR_LENGTH) / 2)
+    local verticalLength = math.max(0, (screenHeight - TARGET_INDICATOR_LENGTH) / 2)
+    ReticleVisual.outerGuides.left:SetDimensions(horizontalLength, GUIDE_THICKNESS)
+    ReticleVisual.outerGuides.right:SetDimensions(horizontalLength, GUIDE_THICKNESS)
+    ReticleVisual.outerGuides.top:SetDimensions(GUIDE_THICKNESS, verticalLength)
+    ReticleVisual.outerGuides.bottom:SetDimensions(GUIDE_THICKNESS, verticalLength)
+    ReticleVisual.horizontalTargetGuide:SetDimensions(TARGET_INDICATOR_LENGTH, GUIDE_THICKNESS)
+    ReticleVisual.verticalTargetGuide:SetDimensions(GUIDE_THICKNESS, TARGET_INDICATOR_LENGTH)
+end
+
+local function ApplyOuterGuideState(settings, outerState)
+    if not ShouldShowOuterGuides(settings) then
+        HideOuterGuides()
+        return
+    end
+
+    local color = GetGuideColor(outerState)
+    for _, control in pairs(ReticleVisual.outerGuides or {}) do
+        control:SetColor(unpack(color))
+        control:SetHidden(false)
+    end
 end
 
 local function ApplyGuideState()
-    local state = GetGuideState()
-    ReticleVisual.currentGuideState = state
-    UpdateDebugPanel(state)
-    ApplyTargetMarkerState(GetReticleSettings())
+    local settings = GetReticleSettings()
+    local targetState = GetTargetState()
+    local outerState = GetOuterGuideState(targetState)
+    ReticleVisual.currentGuideState = outerState
+    ReticleVisual.currentTargetState = targetState
+    UpdateDebugPanel(outerState, targetState)
 
     if not IsHudSceneActive() then
         HideAddonVisuals()
         return
     end
 
-    if not ReticleVisual.horizontalGuide or not ReticleVisual.verticalGuide then
+    if not ReticleVisual.guideOverlay or not ReticleVisual.outerGuides then
         return
     end
 
-    local color = GetGuideColor(state)
-
-    ReticleVisual.horizontalGuide:SetColor(unpack(color))
-    ReticleVisual.verticalGuide:SetColor(unpack(color))
-
-    local screenWidth = GuiRoot:GetWidth()
-    local screenHeight = GuiRoot:GetHeight()
-    if type(screenWidth) == "number" and type(screenHeight) == "number" then
-        ReticleVisual.horizontalGuide:SetDimensions(screenWidth, GUIDE_THICKNESS)
-        ReticleVisual.verticalGuide:SetDimensions(GUIDE_THICKNESS, screenHeight)
-        if ReticleVisual.horizontalTargetGuide and ReticleVisual.verticalTargetGuide then
-            ReticleVisual.horizontalTargetGuide:SetDimensions(TARGET_MARKER_LENGTH, GUIDE_THICKNESS)
-            ReticleVisual.verticalTargetGuide:SetDimensions(GUIDE_THICKNESS, TARGET_MARKER_LENGTH)
-        end
-    end
-
+    ReticleVisual.guideOverlay:SetHidden(not ShouldShowTargetIndicator(settings))
+    ApplyTargetIndicatorState(settings, targetState)
+    ApplyOuterGuideState(settings, outerState)
+    ResizeGuideSegments()
 end
 
 local function RefreshTargetState()
@@ -618,7 +649,7 @@ local function RefreshGuideState()
     local settings = GetReticleSettings()
     if not settings or (settings.debugEnabled ~= true and settings.guidesEnabled == false) then
         HideGuideAndDebug()
-        HideTargetMarker()
+        HideTargetIndicator()
         return
     end
 
@@ -678,7 +709,8 @@ function ReticleVisual.ApplyCurrentState()
         reticleControl:SetAlpha(ReticleVisual.originalAlpha or 1)
         ApplyColor(reticleControl, 1, 1, 1, 1)
         blockOverlay:SetHidden(true)
-        HideTargetMarker()
+        HideTargetIndicator()
+        HideOuterGuides()
         guideOverlay:SetHidden(true)
         if settings.debugEnabled == true then
             ApplyGuideState()
@@ -697,7 +729,7 @@ function ReticleVisual.ApplyCurrentState()
     reticleControl:SetAlpha(settings.idleAlpha or 0.85)
     ApplyColor(reticleControl, 0.9, 0.95, 1, 1)
 
-    guideOverlay:SetHidden(not ShouldShowGuides(settings))
+    guideOverlay:SetHidden(not ShouldShowTargetIndicator(settings))
     ApplyGuideState()
     ApplyBlockOverlayState(blockOverlay)
     blockOverlay:SetHidden(not (settings.blockIndicatorEnabled and ReticleVisual.isBlocking))
@@ -727,16 +759,8 @@ function ReticleVisual.RefreshGuideLayout()
     end
 
     local guideOverlay = EnsureGuideOverlay(reticleControl)
-    guideOverlay:SetHidden(not ShouldShowGuides(settings))
-
-    local screenWidth = GuiRoot:GetWidth()
-    local screenHeight = GuiRoot:GetHeight()
-    if type(screenWidth) ~= "number" or type(screenHeight) ~= "number" then
-        return
-    end
-
-    ReticleVisual.horizontalGuide:SetDimensions(screenWidth, GUIDE_THICKNESS)
-    ReticleVisual.verticalGuide:SetDimensions(GUIDE_THICKNESS, screenHeight)
+    guideOverlay:SetHidden(not ShouldShowTargetIndicator(settings))
+    ResizeGuideSegments()
     ApplyGuideState()
 end
 
