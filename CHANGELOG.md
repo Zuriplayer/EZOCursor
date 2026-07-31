@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.24
+
+- Uses the addon's neutral white guide texture so target and combat colors render exactly as configured instead of being multiplied by the old red source textures.
+
 ## 0.1.23
 
 - Separates target and combat state into a non-overlapping center indicator and outer guide segments.

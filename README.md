@@ -19,8 +19,8 @@ EZOCursor is in public beta. The current scope is intentionally focused: it adds
 
 Current manifest metadata:
 
-- Addon version: `0.1.23`
-- AddOnVersion: `10023`
+- Addon version: `0.1.24`
+- AddOnVersion: `10024`
 - APIVersion: `101049 101050`
 
 ## Installation
@@ -43,6 +43,7 @@ Current manifest metadata:
   - outside combat, visible outer lines use the same target color as the center
   - in combat, the outer lines use the configured combat color while the center continues to show target state
   - combat damage briefly flashes the outer lines with the configured recent-damage color for 600 ms
+  - all segments use a neutral white source texture so the displayed tint matches the selected LibAddonMenu color
 - HUD/HUD UI scene integration for visual overlays.
 - Block shield overlay shown only when active blocking is detected.
 - Low-stamina block warning when current stamina is below five times the Advanced Stats `Block Cost`.

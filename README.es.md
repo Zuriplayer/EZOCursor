@@ -19,8 +19,8 @@ EZOCursor está en beta pública. El alcance actual es intencionadamente concret
 
 Metadata actual del manifiesto:
 
-- Versión del addon: `0.1.23`
-- AddOnVersion: `10023`
+- Versión del addon: `0.1.24`
+- AddOnVersion: `10024`
 - APIVersion: `101049 101050`
 
 ## Instalación
@@ -43,6 +43,7 @@ Metadata actual del manifiesto:
   - fuera de combate, las líneas exteriores visibles usan el mismo color de objetivo que el centro
   - en combate, las líneas exteriores usan el color de combate configurado mientras el centro sigue mostrando el estado de objetivo
   - el daño de combate aplica brevemente a las líneas exteriores el color configurado de daño reciente durante 600 ms
+  - todos los tramos usan una textura base blanca neutra para que el tinte visible coincida con el color seleccionado en LibAddonMenu
 - Integración con escenas HUD/HUD UI para los overlays visuales.
 - Overlay de escudo de bloqueo mostrado sólo cuando se detecta bloqueo activo.
 - Aviso de baja estamina al bloquear cuando la estamina actual está por debajo de cinco veces el `Block Cost` de Advanced Stats.

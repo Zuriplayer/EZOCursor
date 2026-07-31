@@ -16,8 +16,7 @@ local SCENE_STATE_CALLBACK_NAME = "SceneStateChanged"
 local DEFAULT_RETICLE_TEXTURE = "EsoUI/Art/Reticle/reticleAnim.dds"
 local CIRCULAR_RETICLE_TEXTURE = "EsoUI/Art/Reticle/reticleAnim-circle.dds"
 local BLOCK_SHIELD_TEXTURE = "/EZOCursor/media/reticle/block_shield.dds"
-local GUIDE_HORIZONTAL_TEXTURE = "/EZOCursor/media/reticle/guide_horizontal.dds"
-local GUIDE_VERTICAL_TEXTURE = "/EZOCursor/media/reticle/guide_vertical.dds"
+local GUIDE_TEXTURE = "/EZOCursor/media/reticle/guide_pixel.dds"
 local GUIDE_THICKNESS = 4
 local TARGET_INDICATOR_LENGTH = 64
 local BLOCK_ALERT_COST_MULTIPLIER = 5
@@ -301,10 +300,10 @@ local function EnsureGuideOverlay(reticleControl)
     local initialColor = GetGuideColor("noAttackable")
     local halfTargetLength = TARGET_INDICATOR_LENGTH / 2
     local outerGuides = {
-        left = CreateGuideSegment("EZOCursor_GuideHorizontalLeft", overlay, GUIDE_HORIZONTAL_TEXTURE, initialColor),
-        right = CreateGuideSegment("EZOCursor_GuideHorizontalRight", overlay, GUIDE_HORIZONTAL_TEXTURE, initialColor),
-        top = CreateGuideSegment("EZOCursor_GuideVerticalTop", overlay, GUIDE_VERTICAL_TEXTURE, initialColor),
-        bottom = CreateGuideSegment("EZOCursor_GuideVerticalBottom", overlay, GUIDE_VERTICAL_TEXTURE, initialColor),
+        left = CreateGuideSegment("EZOCursor_GuideHorizontalLeft", overlay, GUIDE_TEXTURE, initialColor),
+        right = CreateGuideSegment("EZOCursor_GuideHorizontalRight", overlay, GUIDE_TEXTURE, initialColor),
+        top = CreateGuideSegment("EZOCursor_GuideVerticalTop", overlay, GUIDE_TEXTURE, initialColor),
+        bottom = CreateGuideSegment("EZOCursor_GuideVerticalBottom", overlay, GUIDE_TEXTURE, initialColor),
     }
     outerGuides.left:SetAnchor(RIGHT, overlay, CENTER, -halfTargetLength, 0)
     outerGuides.right:SetAnchor(LEFT, overlay, CENTER, halfTargetLength, 0)
@@ -314,7 +313,7 @@ local function EnsureGuideOverlay(reticleControl)
     local horizontalTargetGuide = CreateGuideSegment(
         "EZOCursor_GuideTargetHorizontal",
         overlay,
-        GUIDE_HORIZONTAL_TEXTURE,
+        GUIDE_TEXTURE,
         initialColor
     )
     horizontalTargetGuide:SetDimensions(TARGET_INDICATOR_LENGTH, GUIDE_THICKNESS)
@@ -323,7 +322,7 @@ local function EnsureGuideOverlay(reticleControl)
     local verticalTargetGuide = CreateGuideSegment(
         "EZOCursor_GuideTargetVertical",
         overlay,
-        GUIDE_VERTICAL_TEXTURE,
+        GUIDE_TEXTURE,
         initialColor
     )
     verticalTargetGuide:SetDimensions(GUIDE_THICKNESS, TARGET_INDICATOR_LENGTH)
