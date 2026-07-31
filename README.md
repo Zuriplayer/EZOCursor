@@ -19,8 +19,8 @@ EZOCursor is in public beta. The current scope is intentionally focused: it adds
 
 Current manifest metadata:
 
-- Addon version: `0.1.21`
-- AddOnVersion: `10021`
+- Addon version: `0.1.22`
+- AddOnVersion: `10022`
 - APIVersion: `101049 101050`
 
 ## Installation
@@ -43,9 +43,10 @@ Current manifest metadata:
   - camera preferred target
   - in combat
   - recent combat damage involving the player
-- Small inner reticle marks near the focus point:
+- Center segment of the guide-line cross near the focus point:
   - green when the current `reticleover` target is attackable
   - yellow when no attackable target is under the reticle
+  - the rest of the guide lines keeps the configured state color
 - HUD/HUD UI scene integration for visual overlays.
 - Block shield overlay shown only when active blocking is detected.
 - Low-stamina block warning when current stamina is below five times the Advanced Stats `Block Cost`.
@@ -101,7 +102,7 @@ Please test these scenarios during beta:
 - Change each guide-line color and confirm the visual state updates.
 - Confirm each settings section shows the purple info icon and opens its general tooltip on hover.
 - Confirm field-specific tooltips open from their controls.
-- Aim at no target, non-attackable targets, and attackable targets; confirm the inner reticle marks change between yellow and green.
+- Aim at no target, non-attackable targets, and attackable targets; confirm only the center segment of the guide-line cross changes between yellow and green.
 - Enter and leave combat.
 - Deal or receive damage and confirm recent-combat color behavior.
 - Confirm overlays hide in inventory, map, Champion Points, crafting, Tales of Tribute, addon settings, and other non-HUD scenes.

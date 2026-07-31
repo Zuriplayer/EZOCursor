@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.22
+
+- Moves the targetability color into the center segment of the guide-line cross so the rest of the horizontal and vertical guides keep their configured state color.
+
 ## 0.1.21
 
 - Softens the center targetability indicator into small translucent inner reticle marks near the focus point.

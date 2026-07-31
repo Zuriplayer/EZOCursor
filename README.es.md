@@ -19,8 +19,8 @@ EZOCursor está en beta pública. El alcance actual es intencionadamente concret
 
 Metadata actual del manifiesto:
 
-- Versión del addon: `0.1.21`
-- AddOnVersion: `10021`
+- Versión del addon: `0.1.22`
+- AddOnVersion: `10022`
 - APIVersion: `101049 101050`
 
 ## Instalación
@@ -43,9 +43,10 @@ Metadata actual del manifiesto:
   - objetivo preferente de cámara
   - en combate
   - daño de combate reciente que implica al jugador
-- Pequeñas marcas interiores de retícula junto al punto de foco:
+- Tramo central de la cruz de líneas guía junto al punto de foco:
   - verde cuando el objetivo actual de `reticleover` es atacable
   - amarillo cuando no hay un objetivo atacable bajo el retículo
+  - el resto de las líneas guía mantiene el color configurado del estado
 - Integración con escenas HUD/HUD UI para los overlays visuales.
 - Overlay de escudo de bloqueo mostrado sólo cuando se detecta bloqueo activo.
 - Aviso de baja estamina al bloquear cuando la estamina actual está por debajo de cinco veces el `Block Cost` de Advanced Stats.
@@ -101,7 +102,7 @@ Durante la beta, prueba estos escenarios:
 - Cambiar cada color de línea guía y confirmar que el estado visual se actualiza.
 - Confirmar que cada sección de ajustes muestra el icono informativo morado y abre su tooltip general al pasar el cursor.
 - Confirmar que los tooltips específicos de cada campo se abren desde sus controles.
-- Apuntar a ningún objetivo, objetivos no atacables y objetivos atacables; confirmar que las marcas interiores de retícula cambian entre amarillo y verde.
+- Apuntar a ningún objetivo, objetivos no atacables y objetivos atacables; confirmar que sólo el tramo central de la cruz de líneas guía cambia entre amarillo y verde.
 - Entrar y salir de combate.
 - Hacer o recibir daño y confirmar el comportamiento del color de daño reciente.
 - Confirmar que los overlays se ocultan en inventario, mapa, Champion Points, crafting, Tales of Tribute, configuración de addons y otras escenas que no sean HUD.
