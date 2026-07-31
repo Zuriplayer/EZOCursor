@@ -4,6 +4,6 @@
 EZOCursor = EZOCursor or {}
 
 EZOCursor.ADDON_NAME = "EZOCursor"
-EZOCursor.ADDON_VERSION = "0.1.24"
+EZOCursor.ADDON_VERSION = "0.1.25"
 EZOCursor.AUTHOR = "@Zuriplayer"
 EZOCursor.EVENT_NAMESPACE = "EZOCursor_Core"

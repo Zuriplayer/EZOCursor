@@ -19,8 +19,8 @@ EZOCursor is in public beta. The current scope is intentionally focused: it adds
 
 Current manifest metadata:
 
-- Addon version: `0.1.24`
-- AddOnVersion: `10024`
+- Addon version: `0.1.25`
+- AddOnVersion: `10025`
 - APIVersion: `101049 101050`
 
 ## Installation

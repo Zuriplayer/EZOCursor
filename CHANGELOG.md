@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.25
+
+- Restores visible guide rendering with neutral white DXT5 textures at the proven 128x4 and 4x128 dimensions supported by ESO.
+
 ## 0.1.24
 
 - Uses the addon's neutral white guide texture so target and combat colors render exactly as configured instead of being multiplied by the old red source textures.

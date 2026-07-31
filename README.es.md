@@ -19,8 +19,8 @@ EZOCursor está en beta pública. El alcance actual es intencionadamente concret
 
 Metadata actual del manifiesto:
 
-- Versión del addon: `0.1.24`
-- AddOnVersion: `10024`
+- Versión del addon: `0.1.25`
+- AddOnVersion: `10025`
 - APIVersion: `101049 101050`
 
 ## Instalación
