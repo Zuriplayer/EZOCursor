@@ -46,3 +46,7 @@ out/
 notes.local.md
 private-notes.md
 *.notes.local.md
+
+# Keep shared AI project instructions versioned.
+!AGENTS.md
+!CLAUDE.md
