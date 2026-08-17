@@ -18,8 +18,11 @@ local CIRCULAR_RETICLE_TEXTURE = "EsoUI/Art/Reticle/reticleAnim-circle.dds"
 local BLOCK_SHIELD_TEXTURE = "/EZOCursor/media/reticle/block_shield.dds"
 local GUIDE_HORIZONTAL_TEXTURE = "/EZOCursor/media/reticle/guide_horizontal.dds"
 local GUIDE_VERTICAL_TEXTURE = "/EZOCursor/media/reticle/guide_vertical.dds"
+local GUIDE_PIXEL_TEXTURE = "/EZOCursor/media/reticle/guide_pixel.dds"
 local GUIDE_THICKNESS = 4
 local TARGET_INDICATOR_LENGTH = 64
+local PREFERRED_TARGET_MARKER_SIZE = TARGET_INDICATOR_LENGTH + 12
+local PREFERRED_TARGET_MARKER_THICKNESS = 2
 local BLOCK_ALERT_COST_MULTIPLIER = 5
 local BLOCK_NORMAL_COLOR = { 1, 1, 1, 0.96 }
 local BLOCK_LOW_STAMINA_COLOR = { 1, 0.18, 0.05, 1 }
@@ -33,7 +36,6 @@ local GUIDE_COLOR_FALLBACKS = {
 local GUIDE_STATE_STRING_ID_NAMES = {
     noAttackable = "SI_EZOCURSOR_STATE_NO_ATTACKABLE",
     attackable = "SI_EZOCURSOR_STATE_ATTACKABLE",
-    cameraPreferred = "SI_EZOCURSOR_STATE_CAMERA_PREFERRED",
     combat = "SI_EZOCURSOR_STATE_COMBAT",
     combatDamage = "SI_EZOCURSOR_STATE_COMBAT_DAMAGE",
 }
@@ -68,6 +70,7 @@ ReticleVisual.guideFragment = nil
 ReticleVisual.outerGuides = nil
 ReticleVisual.horizontalTargetGuide = nil
 ReticleVisual.verticalTargetGuide = nil
+ReticleVisual.preferredTargetMarker = nil
 ReticleVisual.inCombat = false
 ReticleVisual.targetName = nil
 ReticleVisual.targetAttackable = false
@@ -162,6 +165,9 @@ end
 local function HideTargetIndicator()
     SetControlHidden(ReticleVisual.horizontalTargetGuide, true)
     SetControlHidden(ReticleVisual.verticalTargetGuide, true)
+    for _, control in pairs(ReticleVisual.preferredTargetMarker or {}) do
+        SetControlHidden(control, true)
+    end
 end
 
 local function ShouldShowTargetIndicator(settings)
@@ -285,7 +291,8 @@ local function EnsureGuideOverlay(reticleControl)
     if ReticleVisual.guideOverlay
         and ReticleVisual.outerGuides
         and ReticleVisual.horizontalTargetGuide
-        and ReticleVisual.verticalTargetGuide then
+        and ReticleVisual.verticalTargetGuide
+        and ReticleVisual.preferredTargetMarker then
         return ReticleVisual.guideOverlay
     end
 
@@ -311,6 +318,45 @@ local function EnsureGuideOverlay(reticleControl)
     outerGuides.top:SetAnchor(BOTTOM, overlay, CENTER, 0, -halfTargetLength)
     outerGuides.bottom:SetAnchor(TOP, overlay, CENTER, 0, halfTargetLength)
 
+    local halfPreferredMarkerSize = PREFERRED_TARGET_MARKER_SIZE / 2
+    local preferredTargetMarker = {
+        left = CreateGuideSegment(
+            "EZOCursor_PreferredTargetMarkerLeft",
+            overlay,
+            GUIDE_PIXEL_TEXTURE,
+            initialColor
+        ),
+        right = CreateGuideSegment(
+            "EZOCursor_PreferredTargetMarkerRight",
+            overlay,
+            GUIDE_PIXEL_TEXTURE,
+            initialColor
+        ),
+        top = CreateGuideSegment(
+            "EZOCursor_PreferredTargetMarkerTop",
+            overlay,
+            GUIDE_PIXEL_TEXTURE,
+            initialColor
+        ),
+        bottom = CreateGuideSegment(
+            "EZOCursor_PreferredTargetMarkerBottom",
+            overlay,
+            GUIDE_PIXEL_TEXTURE,
+            initialColor
+        ),
+    }
+    preferredTargetMarker.left:SetDimensions(PREFERRED_TARGET_MARKER_THICKNESS, PREFERRED_TARGET_MARKER_SIZE)
+    preferredTargetMarker.left:SetAnchor(RIGHT, overlay, CENTER, -halfPreferredMarkerSize, 0)
+    preferredTargetMarker.right:SetDimensions(PREFERRED_TARGET_MARKER_THICKNESS, PREFERRED_TARGET_MARKER_SIZE)
+    preferredTargetMarker.right:SetAnchor(LEFT, overlay, CENTER, halfPreferredMarkerSize, 0)
+    preferredTargetMarker.top:SetDimensions(PREFERRED_TARGET_MARKER_SIZE, PREFERRED_TARGET_MARKER_THICKNESS)
+    preferredTargetMarker.top:SetAnchor(BOTTOM, overlay, CENTER, 0, -halfPreferredMarkerSize)
+    preferredTargetMarker.bottom:SetDimensions(PREFERRED_TARGET_MARKER_SIZE, PREFERRED_TARGET_MARKER_THICKNESS)
+    preferredTargetMarker.bottom:SetAnchor(TOP, overlay, CENTER, 0, halfPreferredMarkerSize)
+    for _, control in pairs(preferredTargetMarker) do
+        control:SetHidden(true)
+    end
+
     local horizontalTargetGuide = CreateGuideSegment(
         "EZOCursor_GuideTargetHorizontal",
         overlay,
@@ -333,6 +379,7 @@ local function EnsureGuideOverlay(reticleControl)
     ReticleVisual.outerGuides = outerGuides
     ReticleVisual.horizontalTargetGuide = horizontalTargetGuide
     ReticleVisual.verticalTargetGuide = verticalTargetGuide
+    ReticleVisual.preferredTargetMarker = preferredTargetMarker
     RegisterHudFragment(overlay, "guideFragment")
     return overlay
 end
@@ -535,13 +582,15 @@ local function ApplyTargetIndicatorState(settings, targetState)
     ReticleVisual.verticalTargetGuide:SetColor(unpack(color))
     ReticleVisual.horizontalTargetGuide:SetHidden(false)
     ReticleVisual.verticalTargetGuide:SetHidden(false)
+
+    local preferredColor = GetGuideColor("cameraPreferred")
+    for _, control in pairs(ReticleVisual.preferredTargetMarker or {}) do
+        control:SetColor(unpack(preferredColor))
+        control:SetHidden(ReticleVisual.preferredTargetValid ~= true)
+    end
 end
 
 local function GetTargetState()
-    if ReticleVisual.preferredTargetValid then
-        return "cameraPreferred"
-    end
-
     if ReticleVisual.targetAttackable then
         return "attackable"
     end

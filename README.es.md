@@ -19,8 +19,8 @@ EZOCursor está en beta pública. El alcance actual es intencionadamente concret
 
 Metadata actual del manifiesto:
 
-- Versión del addon: `0.1.25`
-- AddOnVersion: `10025`
+- Versión del addon: `0.1.26`
+- AddOnVersion: `10026`
 - APIVersion: `101049 101050`
 
 ## Instalación
@@ -38,8 +38,8 @@ Metadata actual del manifiesto:
 - Sustitución opcional de la textura base del retículo de ESO por la textura circular de ESO.
 - Un indicador central de objetivo y líneas guía exteriores horizontal y vertical a pantalla completa.
 - La información de objetivo y de combate usa zonas visuales separadas sin píxeles solapados:
-  - la cruz central de 64 px muestra el color de objetivo configurado: sin objetivo atacable, objetivo atacable u objetivo preferente de cámara
-  - el objetivo preferente de cámara tiene prioridad en el centro cuando ESO informa `IsGameCameraPreferredTargetValid()`
+  - la cruz central de 64 px muestra el color de atacabilidad configurado: sin objetivo atacable u objetivo atacable
+  - una marca azul independiente rodea la cruz central cuando ESO informa de un objetivo preferente de cámara seleccionado manualmente mediante `IsGameCameraPreferredTargetValid()`
   - fuera de combate, las líneas exteriores visibles usan el mismo color de objetivo que el centro
   - en combate, las líneas exteriores usan el color de combate configurado mientras el centro sigue mostrando el estado de objetivo
   - el daño de combate aplica brevemente a las líneas exteriores el color configurado de daño reciente durante 600 ms
@@ -68,10 +68,10 @@ Opciones visibles actuales:
   - sólo en combate
 - Activar o desactivar el panel debug de estado del cursor.
 - El panel debug sigue su propio ajuste visible y sigue disponible aunque un indicador maestro interno del retículo esté desactivado.
-- Configurar los colores de objetivo usados por el indicador central y, fuera de combate, por las líneas exteriores visibles:
+- Configurar los colores de atacabilidad usados por el indicador central y, fuera de combate, por las líneas exteriores visibles, además del color de la marca independiente de objetivo preferente de cámara:
   - sin objetivo atacable
   - objetivo atacable
-  - objetivo preferente de cámara
+  - marca de objetivo preferente de cámara
 - Configurar los colores de combate usados por las líneas exteriores:
   - en combate
   - destello breve de daño de combate reciente
@@ -80,7 +80,7 @@ Existen algunos ajustes internos o por defecto en SavedVariables, como `enabled`
 
 ## Estados y Límites de Seguridad
 
-- `objetivo preferente de cámara` usa la señal `IsGameCameraPreferredTargetValid()` de ESO. Tiene prioridad visual en el centro, pero no garantiza identidad exacta del objetivo ni rango cuerpo a cuerpo.
+- `marca de objetivo preferente de cámara` usa la señal `IsGameCameraPreferredTargetValid()` de ESO y se dibuja separada del color de atacabilidad. No garantiza identidad exacta del objetivo, atacabilidad ni rango cuerpo a cuerpo.
 - El estado de objetivo atacable usa señales de atacabilidad de ESO para `reticleover`; no es una comprobación de rango. El indicador central expone el estado de objetivo de forma independiente a los colores exteriores de combate.
 - El daño de combate reciente sigue eventos reales de combate que implican al jugador. Cada evento aceptado reinicia el destello de 600 ms de las líneas exteriores.
 - El aviso de bloqueo usa la estamina actual y el `Block Cost` de Advanced Stats; es un umbral de alerta, no una predicción de cada golpe entrante.
@@ -100,8 +100,8 @@ Durante la beta, prueba estos escenarios:
 - Cambiar cada color de objetivo y combate y confirmar que se actualiza la zona visual correspondiente.
 - Confirmar que cada sección de ajustes muestra el icono informativo morado y abre su tooltip general al pasar el cursor.
 - Confirmar que los tooltips específicos de cada campo se abren desde sus controles.
-- Fuera de combate, apuntar a ningún objetivo, objetivos atacables y objetivos preferentes de cámara; confirmar que el centro y las líneas exteriores visibles usan gris, verde y azul por defecto.
-- Entrar en combate y confirmar que las líneas exteriores se vuelven rojas mientras el centro sigue mostrando en gris, verde o azul el estado de objetivo sin mezcla de colores.
+- Fuera de combate, apuntar a ningún objetivo y a objetivos atacables; confirmar que el centro y las líneas exteriores visibles usan gris y verde por defecto. Seleccionar un objetivo preferente de cámara con el control configurado de ESO y confirmar que aparece la marca azul independiente sin cambiar el color de atacabilidad del centro.
+- Entrar en combate y confirmar que las líneas exteriores se vuelven rojas mientras el centro sigue mostrando en gris o verde el estado de atacabilidad sin mezcla de colores, con la marca azul preferente independiente cuando esté activa.
 - Hacer o recibir daño y confirmar que las líneas exteriores destellan brevemente en naranja antes de volver al rojo.
 - Confirmar que los overlays se ocultan en inventario, mapa, Champion Points, crafting, Tales of Tribute, configuración de addons y otras escenas que no sean HUD.
 - Confirmar que el escudo de bloqueo aparece sólo mientras el personaje está bloqueando activamente.

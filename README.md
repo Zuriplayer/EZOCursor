@@ -19,8 +19,8 @@ EZOCursor is in public beta. The current scope is intentionally focused: it adds
 
 Current manifest metadata:
 
-- Addon version: `0.1.25`
-- AddOnVersion: `10025`
+- Addon version: `0.1.26`
+- AddOnVersion: `10026`
 - APIVersion: `101049 101050`
 
 ## Installation
@@ -38,8 +38,8 @@ Current manifest metadata:
 - Optional replacement of the base ESO reticle texture with ESO's circular reticle texture.
 - A center target indicator and outer full-screen horizontal and vertical guide lines.
 - Target and combat information use separate visual areas with no overlapping pixels:
-  - the 64 px center cross shows the configured target color: no attackable target, attackable target, or camera preferred target
-  - camera preferred has priority in the center whenever ESO reports `IsGameCameraPreferredTargetValid()`
+  - the 64 px center cross shows the configured targetability color: no attackable target or attackable target
+  - a separate blue marker surrounds the center cross whenever ESO reports a manually selected camera-preferred target through `IsGameCameraPreferredTargetValid()`
   - outside combat, visible outer lines use the same target color as the center
   - in combat, the outer lines use the configured combat color while the center continues to show target state
   - combat damage briefly flashes the outer lines with the configured recent-damage color for 600 ms
@@ -68,10 +68,10 @@ Current visible options:
   - only in combat
 - Enable or disable the cursor state debug panel.
 - The debug panel follows its own visible setting and remains available even if an internal reticle master flag is disabled.
-- Configure target colors used by the center indicator and, outside combat, by visible outer lines:
+- Configure targetability colors used by the center indicator and, outside combat, by visible outer lines, plus the separate camera-preferred marker color:
   - no attackable target
   - attackable target
-  - camera preferred target
+  - camera-preferred marker
 - Configure combat colors used by the outer lines:
   - in combat
   - brief recent-combat-damage flash
@@ -80,7 +80,7 @@ Some internal/default reticle settings exist in SavedVariables, such as `enabled
 
 ## State and Safety Limits
 
-- `camera preferred target` uses ESO's `IsGameCameraPreferredTargetValid()` signal. It has visual priority in the center, but it does not guarantee exact target identity or melee range.
+- `camera-preferred marker` uses ESO's `IsGameCameraPreferredTargetValid()` signal and is drawn separately from the targetability color. It does not guarantee exact target identity, attackability, or melee range.
 - Attackable target state uses ESO attackability signals for `reticleover`; it is not a range check. The center indicator exposes target state independently from the outer combat colors.
 - Recent combat damage follows real combat events involving the player. Each accepted event restarts the 600 ms outer-line flash.
 - The block warning uses current stamina and Advanced Stats `Block Cost`; it is an alert threshold, not a prediction of every incoming hit.
@@ -100,8 +100,8 @@ Please test these scenarios during beta:
 - Change each target and combat color and confirm the corresponding visual area updates.
 - Confirm each settings section shows the purple info icon and opens its general tooltip on hover.
 - Confirm field-specific tooltips open from their controls.
-- Outside combat, aim at no target, attackable targets, and camera-preferred targets; confirm the center and visible outer lines use gray, green, and blue by default.
-- Enter combat and confirm the outer lines turn red while the center continues to report gray, green, or blue target state without color blending.
+- Outside combat, aim at no target and attackable targets; confirm the center and visible outer lines use gray and green by default. Select a camera-preferred target with ESO's configured control and confirm the separate blue marker appears without changing the center targetability color.
+- Enter combat and confirm the outer lines turn red while the center continues to report gray or green target state without color blending, with the blue preferred marker remaining independent when active.
 - Deal or receive damage and confirm the outer lines flash orange briefly before returning to red.
 - Confirm overlays hide in inventory, map, Champion Points, crafting, Tales of Tribute, addon settings, and other non-HUD scenes.
 - Confirm the block shield appears only while the character is actively blocking.

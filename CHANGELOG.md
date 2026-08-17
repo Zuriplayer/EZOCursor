@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.26
+
+- Keeps camera-preferred status out of the center targetability hierarchy.
+- Shows the configured camera-preferred color as a separate marker around the center indicator when ESO reports a manually selected preferred target.
+- Updates the English and Spanish settings help and testing guidance to distinguish targetability from camera-preferred selection.
+
 ## 0.1.25
 
 - Restores visible guide rendering with neutral white DXT5 textures at the proven 128x4 and 4x128 dimensions supported by ESO.
