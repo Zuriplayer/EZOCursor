@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.27
+
+- Updates the addon manifest and version-check documentation for ESO API `101051`.
+
 ## 0.1.26
 
 - Keeps camera-preferred status out of the center targetability hierarchy.

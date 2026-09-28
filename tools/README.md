@@ -7,13 +7,13 @@ Wrapper local para la herramienta compartida `..\..\EZOFamilyTools\bump-version.
 Uso habitual:
 
 ```powershell
-.\tools\bump-version.ps1 -Patch -ApiVersion "101049 101050"
+.\tools\bump-version.ps1 -Patch -ApiVersion "101051"
 ```
 
 Comprobación:
 
 ```powershell
-.\tools\bump-version.ps1 -Check -ApiVersion "101049 101050"
+.\tools\bump-version.ps1 -Check -ApiVersion "101051"
 ```
 
 `## APIVersion` controla si ESO marca el addon como desactualizado en la pantalla de complementos/addons. No usar más de dos valores.
